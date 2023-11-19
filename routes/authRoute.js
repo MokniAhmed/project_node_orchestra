@@ -10,7 +10,7 @@ const {
   forgotPassword,
   verifyPassResetCode,
   resetPassword,
-} = require("../middlewares/authMiddleware");
+} = require("../services/authService");
 
 const router = express.Router();
 
