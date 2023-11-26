@@ -3,10 +3,11 @@ const mongoose = require("mongoose");
 const candidateSchema = new mongoose.Schema({
   firstName: { type: String, required: [true, "candidate need first name"] },
   lastName: { type: String, required: [true, "candidate need lastName"] },
-  birthday: { type: Date, required: [true] },
+  birthday: { type: Date, required: [true, "must be provided a Date."] },
   address: { type: String, required: [true, "address need to be provided"] }, //maybe remake as geopoint
   height: { type: Number, required: [true, "a height must be  provided"] },
   gender: { type: String, required: [true, "gender need to be provided"] },
+  phone: String,
   nationality: {
     type: String,
     required: [true, "nationality need to be provided"],

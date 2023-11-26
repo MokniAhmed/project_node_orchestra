@@ -1,30 +1,29 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    firstName: { type: String, required: [true, "candidate need first name"] },
+    lastName: { type: String, required: [true, "candidate need lastName"] },
+    birthday: { type: Date, required: [true, "must be provided a Date."] },
+    height: { type: Number, required: [true, "a height must be  provided"] },
+    gender: { type: String, required: [true, "gender need to be provided"] },
+    phone: String,
+    nationality: {
       type: String,
-      trim: true,
-      required: [true, 'name required'],
+      required: [true, "nationality need to be provided"],
     },
-    slug: {
-      type: String,
-      lowercase: true,
-    },
+    cin: { type: Number },
     email: {
       type: String,
-      required: [true, 'email required'],
+      required: [true, "email required"],
       unique: true,
       lowercase: true,
     },
-    phone: String,
-    profileImg: String,
-
     password: {
       type: String,
-      required: [true, 'password required'],
-      minlength: [6, 'Too short password'],
+      required: [true, "password required"],
+      minlength: [6, "Too short password"],
     },
     passwordChangedAt: Date,
     passwordResetCode: String,
@@ -32,41 +31,38 @@ const userSchema = new mongoose.Schema(
     passwordResetVerified: Boolean,
     role: {
       type: String,
-      enum: ['user', 'manager', 'admin'],
-      default: 'user',
+      enum: [
+        "chorist",
+        "admin",
+        "chef_pupitre",
+        "chef_choeur",
+        "manager_choeur",
+      ],
     },
-    active: {
-      type: Boolean,
-      default: true,
+
+    address: { type: String, required: [true, "address need to be provided"] },
+    musical_kbowledge: [{ type: String }],
+    deleted: { type: Boolean, default: false },
+    musical_instrument: String,
+    nb_absence: Number,
+    status_elimination: { type: String, enum: ["absence", "disciplinary"] },
+    group_pupitre: {
+      type: String,
+      enum: ["first", "second", "third", "fourth"],
     },
-    // child reference (one to many)
-    wishlist: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Product',
-      },
-    ],
-    addresses: [
-      {
-        id: { type: mongoose.Schema.Types.ObjectId },
-        alias: String,
-        details: String,
-        phone: String,
-        city: String,
-        postalCode: String,
-      },
-    ],
+    status: [{ statuts: String, date: Date }],
   },
+
   { timestamps: true }
 );
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
   // Hashing user password
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;
