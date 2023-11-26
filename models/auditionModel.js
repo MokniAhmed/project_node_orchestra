@@ -1,0 +1,20 @@
+const mongoose = require("mongoose");
+
+const auditionSchema = new mongoose.Schema({
+  season: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Season",
+    required: [true, "Audition must belong to a Season."],
+  },
+  starting_date: { type: Date, required: [true, "must give a starting Date."] },
+  ending_date: { type: Date, required: [true, "must give a ending Date."] },
+  nb_candidate_day: {
+    type: Number,
+    required: [true, "provide number of candidate for each day."],
+  },
+  total_condidate: Number,
+});
+
+const Audition = mongoose.Model("Audition", auditionSchema);
+
+module.exports = Audition;
