@@ -1,12 +1,12 @@
 const express = require("express");
 const {
   createCondidateValidator,
-} = require("../utils/validators/condidateValidator");
+} = require("../utils/validators/candidateValidator");
 
 const {
   CreateCondidateNotValide,
   ValidateCondidate,
-} = require("../services/condidateService");
+} = require("../services/candidateService");
 
 const router = express.Router();
 
