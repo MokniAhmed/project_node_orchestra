@@ -1,10 +1,14 @@
 const asyncHandler = require("express-async-handler");
 
+
+
+
+
 const ApiError = require("../utils/apiError");
 const createToken = require("../utils/createToken");
 const Condidate = require("../models/candidateModel");
 const sendEmail = require("../utils/sendEmail");
-
+const factory = require("./handlersFactory");
 // @desc    Create Condidate Not Valide
 // @route   PUT /api/v1/condidate/
 // @access  public/user
@@ -51,3 +55,6 @@ exports.ValidateCondidate = asyncHandler(async (req, res, next) => {
   // 4- send response
   res.status(200).json({ condidate });
 });
+
+exports.getAllCandidates = factory.getAll(Condidate);
+
