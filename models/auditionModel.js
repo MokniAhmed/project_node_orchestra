@@ -8,7 +8,13 @@ const auditionSchema = new mongoose.Schema({
   },
   starting_date: { type: Date, required: [true, "must give a starting Date."] },
   ending_date: { type: Date, required: [true, "must give a ending Date."] },
-
+  planning: [
+    {
+      starting_date: Date,
+      duration: { type: Number, default: 30 },
+      candidate: { type: mongoose.Schema.ObjectId },
+    },
+  ],
   nb_candidate_day: {
     type: Number,
     required: [true, "provide number of candidate for each day."],

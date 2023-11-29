@@ -1,9 +1,5 @@
 const asyncHandler = require("express-async-handler");
 
-
-
-
-
 const ApiError = require("../utils/apiError");
 const createToken = require("../utils/createToken");
 const Condidate = require("../models/candidateModel");
@@ -57,4 +53,3 @@ exports.ValidateCondidate = asyncHandler(async (req, res, next) => {
 });
 
 exports.getAllCandidates = factory.getAll(Condidate);
-
