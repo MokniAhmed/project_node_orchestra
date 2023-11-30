@@ -50,3 +50,7 @@ exports.createCondidateValidator = [
 
   validatorMiddleware,
 ];
+exports.deleteCondidateValidator = [
+  check("id").isMongoId().withMessage("Invalid Condidate Id format"),
+  validatorMiddleware,
+];

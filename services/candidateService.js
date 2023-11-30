@@ -75,3 +75,18 @@ exports.updateInfosAuditionForCondidate = asyncHandler(
     res.status(200).json({ candidate });
   }
 );
+
+// @desc    Delete condidate
+// @route   Delete /api/v1/condidate/:id
+// @access  private/admin
+exports.deleteCondidateById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  // 1-find sepcific condidate by id and delete him
+  const candidate = await Condidate.findByIdAndDelete(id);
+  //2- verification condidate if he doesn't exist
+  if (!candidate) {
+    return next(new ApiError("condidate is invalid", 401));
+  }
+  //3- send response
+  res.status(200).json({ message: "deleted successfully" });
+});
