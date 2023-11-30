@@ -6,12 +6,12 @@ const Condidate = require("../models/candidateModel");
 const sendEmail = require("../utils/sendEmail");
 const factory = require("./handlersFactory");
 // @desc    Create Condidate Not Valide
-// @route   PUT /api/v1/condidate/
+// @route   POST /api/v1/condidate/
 // @access  public/user
 exports.CreateCondidateNotValide = asyncHandler(async (req, res, next) => {
   // 1- Generate token
   const tokenValidate = createToken(req.body.email);
-  // 2- create condidatenot valide
+  // 2- create condidate not valide
   const condidate = await Condidate.create({
     ...req.body,
     token_validate: tokenValidate,
@@ -39,7 +39,6 @@ exports.ValidateCondidate = asyncHandler(async (req, res, next) => {
   const condidate = await Condidate.findOne({
     token_validate: token,
   });
-  console.log(condidate);
   if (!condidate) {
     return next(new ApiError("token email invalid", 401));
   }
