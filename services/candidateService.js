@@ -52,3 +52,26 @@ exports.ValidateCondidate = asyncHandler(async (req, res, next) => {
 });
 
 exports.getAllCandidates = factory.getAll(Condidate);
+
+// @desc    update infos for audition for each condidate
+// @route   PUT /api/v1/condidate/:id
+// @access  private/admin
+exports.updateInfosAuditionForCondidate = asyncHandler(
+  async (req, res, next) => {
+    const { id } = req.params;
+    // 1-find sepcific condidate by id and update its infos
+    const candidate = await Condidate.findByIdAndUpdate(
+      id,
+      {
+        ...req.body,
+      },
+      { new: true }
+    );
+    //2- verification condidate
+    if (!candidate) {
+      return next(new ApiError("condidate  invalid", 401));
+    }
+    //3- send response
+    res.status(200).json({ candidate });
+  }
+);

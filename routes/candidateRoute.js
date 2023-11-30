@@ -9,11 +9,13 @@ const {
 const {
   CreateCondidateNotValide,
   ValidateCondidate,
+  updateInfosAuditionForCondidate,
 } = require("../services/candidateService");
 
 const router = express.Router();
 router.get("/all", candidateService.getAllCandidates);
 router.post("/", createCondidateValidator, CreateCondidateNotValide);
 router.put("/:token", ValidateCondidate);
+router.put("/infos/:id", updateInfosAuditionForCondidate);
 
 module.exports = router;
