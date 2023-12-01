@@ -16,6 +16,7 @@ const auditionSchema = new mongoose.Schema(
       {
         starting_date: Date,
         duration: { type: Number, default: 30 },
+
         order: Number,
         candidate: { type: mongoose.Schema.ObjectId },
       },
@@ -41,6 +42,7 @@ const auditionSchema = new mongoose.Schema(
 
   next();
 }); */
+
 
 const Audition = mongoose.model("Audition", auditionSchema);
 
