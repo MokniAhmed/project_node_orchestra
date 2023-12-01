@@ -15,5 +15,5 @@ const absentSchema = new mongoose.Schema({
   },
 });
 
-const Absent = mongoose.Model("Absent", absentSchema);
+const Absent = mongoose.model("Absent", absentSchema);
 module.exports = Absent;

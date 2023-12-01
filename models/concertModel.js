@@ -9,5 +9,5 @@ const concertSchema = new mongoose.Schema({
   list_final: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
 });
 
-const Concert = mongoose.Model("Concert", concertSchema);
+const Concert = mongoose.model("Concert", concertSchema);
 module.exports = Concert;

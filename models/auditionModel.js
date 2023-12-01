@@ -22,6 +22,6 @@ const auditionSchema = new mongoose.Schema({
   total_condidate: Number,
 });
 
-const Audition = mongoose.Model("Audition", auditionSchema);
+const Audition = mongoose.model("Audition", auditionSchema);
 
 module.exports = Audition;
