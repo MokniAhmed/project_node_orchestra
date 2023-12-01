@@ -25,5 +25,5 @@ const musicalSchema = new mongoose.Schema({
   pupitre: [{ type: String, enum: ["first", "second", "third", "forth"] }],
 });
 
-const Musical = mongoose.Model("Musical", musicalSchema);
+const Musical = mongoose.model("Musical", musicalSchema);
 module.exports = Musical;

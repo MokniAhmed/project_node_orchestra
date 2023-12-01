@@ -15,5 +15,5 @@ const repetitionSchema = new mongoose.Schema({
   list_presence: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
 });
 
-const Repetition = mongoose.Model("Repetition", repetitionSchema);
+const Repetition = mongoose.model("Repetition", repetitionSchema);
 module.exports = Repetition;

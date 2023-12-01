@@ -11,5 +11,5 @@ const seasonSchema = new mongoose.Schema({
   max_absence: { type: Number, default: 365 },
 });
 
-const Season = mongoose.Model("Season", seasonSchema);
+const Season = mongoose.model("Season", seasonSchema);
 module.exports = Season;
