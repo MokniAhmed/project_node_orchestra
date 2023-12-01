@@ -32,6 +32,7 @@ const candidateSchema = new mongoose.Schema(
     range: { type: String },
     appreciation: { type: String },
     piece_of_music: { type: String },
+    status: { type: String, enum: ["accepted ", "rejected"] },
     nb_ordre: { type: Number },
     validate_mail: { type: Boolean, default: false },
     token_validate: String,
