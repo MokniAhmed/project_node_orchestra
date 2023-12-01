@@ -19,6 +19,6 @@ router.get("/all", candidateService.getAllCandidates);
 router.post("/", createCondidateValidator, CreateCondidateNotValide);
 router.put("/:token", ValidateCondidate);
 router.put("/infos/:id", updateInfosAuditionForCondidate);
-router.delete("/infos/:id", deleteCondidateValidator, deleteCondidateById);
+router.delete("/:id", deleteCondidateValidator, deleteCondidateById);
 
 module.exports = router;
