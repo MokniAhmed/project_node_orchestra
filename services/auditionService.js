@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 const schedule = require("node-schedule");
 
 const asyncHandler = require("express-async-handler");
