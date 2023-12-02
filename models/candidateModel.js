@@ -43,10 +43,5 @@ const candidateSchema = new mongoose.Schema(
   }
 );
 
-candidateSchema.pre(/^find/, function (next) {
-  this.populate("audition_id");
-  next();
-});
-
 const Candidate = mongoose.model("Candidate", candidateSchema);
 module.exports = Candidate;
