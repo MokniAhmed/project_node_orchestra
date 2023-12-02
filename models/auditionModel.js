@@ -17,7 +17,7 @@ const auditionSchema = new mongoose.Schema(
         starting_date: Date,
         duration: { type: Number, default: 30 },
         order: Number,
-        candidate: { type: mongoose.Schema.ObjectId },
+        candidate: { type: mongoose.Schema.ObjectId, ref: "Candidate" },
       },
     ],
     audition_starting_date: {
