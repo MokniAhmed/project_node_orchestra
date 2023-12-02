@@ -24,6 +24,7 @@ exports.createCondidateValidator = [
         if (condidate) {
           return Promise.reject(new Error("E-mail already in condidate"));
         }
+        return true;
       })
     ),
   check("birthday")
@@ -48,5 +49,9 @@ exports.createCondidateValidator = [
     .isMobilePhone(["ar-TN"])
     .withMessage("Invalid phone number only accepted TN "),
 
+  validatorMiddleware,
+];
+exports.deleteCondidateValidator = [
+  check("id").isMongoId().withMessage("Invalid Condidate Id format"),
   validatorMiddleware,
 ];

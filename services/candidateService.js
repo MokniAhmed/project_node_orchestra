@@ -8,12 +8,12 @@ const Audition = require("../models/auditionModel");
 const sendEmail = require("../utils/sendEmail");
 const factory = require("./handlersFactory");
 // @desc    Create Condidate Not Valide
-// @route   PUT /api/v1/condidate/
+// @route   POST /api/v1/condidate/
 // @access  public/user
 exports.CreateCondidateNotValide = asyncHandler(async (req, res, next) => {
   // 1- Generate token
   const tokenValidate = createToken(req.body.email);
-  // 2- create condidatenot valide
+  // 2- create condidate not valide
   const condidate = await Condidate.create({
     ...req.body,
     token_validate: tokenValidate,
@@ -41,7 +41,6 @@ exports.ValidateCondidate = asyncHandler(async (req, res, next) => {
   const condidate = await Condidate.findOne({
     token_validate: token,
   });
-  console.log(condidate);
   if (!condidate) {
     return next(new ApiError("token email invalid", 401));
   }
@@ -112,4 +111,45 @@ exports.createNewCandidate = asyncHandler(async (req, res, next) => {
 });
 
 exports.getAllCandidates = factory.getAll(Condidate);
+
 exports.getOneCandidate = factory.getOne(Condidate);
+
+
+// @desc    update infos for audition for each condidate
+// @route   PUT /api/v1/condidate/:id
+// @access  private/admin
+exports.updateInfosAuditionForCondidate = asyncHandler(
+  async (req, res, next) => {
+    const { id } = req.params;
+    // 1-find sepcific condidate by id and update its infos
+    const candidate = await Condidate.findByIdAndUpdate(
+      id,
+      {
+        ...req.body,
+      },
+      { new: true }
+    );
+    //2- verification condidate
+    if (!candidate) {
+      return next(new ApiError("condidate  invalid", 401));
+    }
+    //3- send response
+    res.status(200).json({ candidate });
+  }
+);
+
+// @desc    Delete condidate
+// @route   Delete /api/v1/condidate/:id
+// @access  private/admin
+exports.deleteCondidateById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  // 1-find sepcific condidate by id and delete him
+  const candidate = await Condidate.findByIdAndDelete(id);
+  //2- verification condidate if he doesn't exist
+  if (!candidate) {
+    return next(new ApiError("condidate is invalid", 401));
+  }
+  //3- send response
+  res.status(200).json({ message: "deleted successfully" });
+});
+

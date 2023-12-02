@@ -36,13 +36,11 @@ const candidateSchema = new mongoose.Schema(
     validate_mail: { type: Boolean, default: false },
     token_validate: String,
   },
+
   {
     timestamps: true,
   }
 );
-/* candidateSchema.pre(/^find/, function (next) {
-  this.populate("audition_id");
-  next();
-}); */
+
 const Candidate = mongoose.model("Candidate", candidateSchema);
 module.exports = Candidate;
