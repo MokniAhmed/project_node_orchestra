@@ -32,7 +32,10 @@ const candidateSchema = new mongoose.Schema(
     range: { type: String },
     appreciation: { type: String },
     piece_of_music: { type: String },
-    status: { type: String, enum: ["accepted ", "rejected"] },
+    status: {
+      type: String,
+      enum: ["accepted", "rejected", "accepted_confimed", "cancelled"],
+    },
     nb_ordre: { type: Number },
     validate_mail: { type: Boolean, default: false },
     token_validate: String,
@@ -42,6 +45,12 @@ const candidateSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// candidateSchema.pre(/^find/, function (next) {
+//   this.populate("audition_id");
+//   next();
+// });
+
 
 const Candidate = mongoose.model("Candidate", candidateSchema);
 module.exports = Candidate;

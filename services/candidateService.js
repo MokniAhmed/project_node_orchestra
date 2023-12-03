@@ -4,9 +4,11 @@ const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const createToken = require("../utils/createToken");
 const Condidate = require("../models/candidateModel");
+const User = require("../models/userModel");
 const Audition = require("../models/auditionModel");
 const sendEmail = require("../utils/sendEmail");
 const factory = require("./handlersFactory");
+
 // @desc    Create Condidate Not Valide
 // @route   POST /api/v1/condidate/
 // @access  public/user
@@ -114,42 +116,127 @@ exports.getAllCandidates = factory.getAll(Condidate);
 
 exports.getOneCandidate = factory.getOne(Condidate);
 
-
 // @desc    update infos for audition for each condidate
 // @route   PUT /api/v1/condidate/:id
 // @access  private/admin
-exports.updateInfosAuditionForCondidate = asyncHandler(
-  async (req, res, next) => {
-    const { id } = req.params;
-    // 1-find sepcific condidate by id and update its infos
-    const candidate = await Condidate.findByIdAndUpdate(
-      id,
-      {
-        ...req.body,
-      },
-      { new: true }
-    );
-    //2- verification condidate
-    if (!candidate) {
-      return next(new ApiError("condidate  invalid", 401));
-    }
-    //3- send response
-    res.status(200).json({ candidate });
-  }
-);
+exports.updateInfosAuditionForCondidate = factory.updateOne(Condidate);
 
 // @desc    Delete condidate
 // @route   Delete /api/v1/condidate/:id
 // @access  private/admin
-exports.deleteCondidateById = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  // 1-find sepcific condidate by id and delete him
-  const candidate = await Condidate.findByIdAndDelete(id);
-  //2- verification condidate if he doesn't exist
-  if (!candidate) {
-    return next(new ApiError("condidate is invalid", 401));
+exports.deleteCondidateById = factory.deleteOne(Condidate);
+
+// @desc    send email to accepted condidates
+// @route   GET /api/v1/condidate/accepted
+// @access  private/admin0
+exports.acceptetionCandidateEmails = asyncHandler(async (req, res, next) => {
+  // 1- find all candidate accepted
+  const condidatesAccepted = await Condidate.find({
+    status: "accepted",
+  });
+  if (!condidatesAccepted || condidatesAccepted.length === 0) {
+    return next(new ApiError("not have candidates accepted", 401));
   }
-  //3- send response
-  res.status(200).json({ message: "deleted successfully" });
+  var newListAccepted = [];
+
+  // 2- map  candidate accepted
+  await Promise.all(
+    condidatesAccepted.map(async (candidate) => {
+      // 3- Generate tokenValidate for candidate accepted
+      const tokenValidate = createToken(candidate.email);
+      // 4- update candidate (add token_validate)
+      const condidateN = await Condidate.findByIdAndUpdate(
+        candidate._id,
+        {
+          token_validate: tokenValidate,
+        },
+        { new: true }
+      );
+      if (!condidateN) {
+        return next(new ApiError("condidate  invalid", 401));
+      }
+      newListAccepted.push(condidateN);
+      // 5- send email
+      sendEmail({
+        email: candidate.email,
+        subject: "acceptation email",
+        message: "ekjneknke",
+        html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
+                     <a href="/token/${tokenValidate}" style="margin-top: 100px;  padding: 10px 20px;color: white; background-color:rgb(0, 229, 255) ;">accepted </a>
+                </div>`,
+      });
+    })
+  );
+
+  // 6- return response
+  res.status(200).json({ newListAccepted });
 });
 
+// @desc    confimed or cansled acceptation condidate
+// @route   PUT /api/v1/condidate/response/:token
+// @access  public/user
+exports.responseCondidateForAcceptation = asyncHandler(
+  async (req, res, next) => {
+    const { token } = req.params;
+    const { response } = req.body;
+    // 1- find condidate by token_validate
+    const condidate = await Condidate.findOne({
+      token_validate: token,
+    });
+    if (!condidate) {
+      return next(new ApiError("token email invalid", 401));
+    }
+    // 2- check if condidate
+    if (condidate.status !== "accepted") {
+      return next(new ApiError("you are not accepted", 403));
+    }
+    // 3- update  token_validate to null
+    condidate.token_validate = null;
+    // 4- check body.response
+    if (!response) {
+      condidate.status = "cancelled";
+    } else {
+      condidate.status = "accepted_confimed";
+      // 5- delete audtion proprety from condidate object
+      const {
+        remark,
+        range,
+        appreciation,
+        piece_of_music,
+        status,
+        nb_ordre,
+        token_validate,
+        validate_mail,
+        createdAt,
+        updatedAt,
+        audition_id,
+        __v,
+        ...userProprety
+      } = condidate.toJSON();
+      const password = Math.random() // 7-  Generate random number, eg: 0.123456
+        .toString(36) // Convert  to base-36 : "0.4fzyo82mvyr"
+        .slice(-8); // Cut off last 8 characters : "yo82mvyr"
+      // 8- create new user
+      const newUser = await User.create({
+        ...userProprety,
+        role: "chorist",
+        group_pupitre: "first",
+        password,
+      });
+      // 9- send email with password
+      sendEmail({
+        email: candidate.email,
+        subject: "acceptation email",
+        message: "ekjneknke",
+        html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
+                    <h1>your password:${newUser.password}</h1>
+                </div>`,
+      });
+    }
+
+    // 10- save condidate
+    await condidate.save();
+    // 11- send response
+    res.status(200).json({ condidate });
+  }
+);
