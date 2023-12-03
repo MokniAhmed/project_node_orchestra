@@ -32,6 +32,11 @@ const candidateSchema = new mongoose.Schema(
     range: { type: String },
     appreciation: { type: String },
     piece_of_music: { type: String },
+    group_pupitre: {
+      type: String,
+      enum: ["first", "second", "third", "fourth"],
+    },
+    list_muted: [{ type: Date }],
     status: {
       type: String,
       enum: ["accepted", "rejected", "accepted_confimed", "cancelled"],

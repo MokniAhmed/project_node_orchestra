@@ -198,8 +198,10 @@ exports.responseCondidateForAcceptation = asyncHandler(
     } else {
       condidate.status = "accepted_confimed";
       // 5- delete audtion proprety from condidate object
+      const updatedCondidate = condidate;
       const {
         remark,
+        _id,
         range,
         appreciation,
         piece_of_music,
@@ -222,10 +224,12 @@ exports.responseCondidateForAcceptation = asyncHandler(
         role: "chorist",
         group_pupitre: "first",
         password,
+        status: { statuts: "junior", date: Date.now() },
       });
+
       // 9- send email with password
       sendEmail({
-        email: candidate.email,
+        email: condidate.email,
         subject: "accepted email",
         message: "ekjneknke",
         html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
