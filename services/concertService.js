@@ -32,63 +32,19 @@ exports.createConcert = asyncHandler(async (req, res, next) => {
 // @desc    get all Concert
 // @route   GET /api/v1/concert/
 // @access  public/user
-exports.getAllConcerts = asyncHandler(async (req, res, next) => {
-  //1 - get all concerts
-  const concerts = await Concert.find();
-  res.status(200).json({ data: concerts });
-});
-
+exports.getAllConcerts = factory.getAll(Concert);
 // @desc    get  Concert by id
 // @route   GET /api/v1/concert/
 // @access  public/user
-exports.getConcertById = asyncHandler(async (req, res, next) => {
-  //1 - get  concert by id
-  const { id } = req.params;
-
-  const concert = await Concert.findById(id);
-  //2- verification concert if he doesn't exist
-  if (!concert) {
-    return next(new ApiError("concert is invalid", 401));
-  }
-  //3- send response
-  res.status(200).json({ concert });
-});
+exports.getConcertById = factory.getOne(Concert);
 
 // @desc    DELETE  Concert by id
 // @route   DELETE /api/v1/concert/
 // @access  public/user
 
-exports.deleteConcertById = asyncHandler(async (req, res, next) => {
-  //1 - get  concert by id
-  const { id } = req.params;
-
-  const concert = await Concert.findByIdAndDelete(id);
-  //2- verification concert if he doesn't exist
-  if (!concert) {
-    return next(new ApiError("concert is invalid", 401));
-  }
-  //3- send response
-  res.status(200).json({ message: "deleted successfully" });
-});
+exports.deleteConcertById = factory.deleteOne(Concert);
 
 // @desc    UPDATE  Concert by id
 // @route   PUT /api/v1/concert/
 // @access  public/user
-exports.updateConcertById = asyncHandler(async (req, res, next) => {
-  //1 - get  concert by id and update it
-  const { id } = req.params;
-
-  const concert = await Concert.findByIdAndUpdate(
-    id,
-    {
-      ...req.body,
-    },
-    { new: true }
-  );
-  //2- verification concert if he doesn't exist
-  if (!concert) {
-    return next(new ApiError("concert is invalid", 401));
-  }
-  //3- send response
-  res.status(200).json({ concert });
-});
+exports.updateConcertById = factory.updateOne(Concert);
