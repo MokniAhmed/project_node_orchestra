@@ -44,8 +44,11 @@ const userSchema = new mongoose.Schema(
     musical_kbowledge: [{ type: String }],
     deleted: { type: Boolean, default: false },
     musical_instrument: String,
-    nb_absence: Number,
-    status_elimination: { type: String, enum: ["absence", "disciplinary"] },
+    nb_absence: { type: Number, default: 0 },
+    status_elimination: {
+      type: String,
+      enum: ["absence", "disciplinary"],
+    },
     group_pupitre: {
       type: String,
       enum: ["first", "second", "third", "fourth"],
