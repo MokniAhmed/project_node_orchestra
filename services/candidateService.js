@@ -226,7 +226,7 @@ exports.responseCondidateForAcceptation = asyncHandler(
       // 9- send email with password
       sendEmail({
         email: candidate.email,
-        subject: "acceptation email",
+        subject: "accepted email",
         message: "ekjneknke",
         html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
                     <h1>your password:${newUser.password}</h1>
