@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "password required"],
-      minlength: [6, "Too short password"],
+      minlength: [4, "Too short password"],
     },
     passwordChangedAt: Date,
     passwordResetCode: String,
@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema(
     musical_kbowledge: [{ type: String }],
     deleted: { type: Boolean, default: false },
     musical_instrument: String,
-    nb_absence: Number,
+    nb_absence: { type: Number, default: 0 },
     status_elimination: { type: String, enum: ["absence", "disciplinary"] },
     group_pupitre: {
       type: String,

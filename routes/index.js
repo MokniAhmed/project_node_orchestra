@@ -5,7 +5,7 @@ const auditRoute = require("./auditionRouter");
 
 const seasonRoute = require("./seasonRoute");
 const musicalRoute = require("./musicalRoute");
-
+const repetitionRoute = require("./repetitionRouter");
 
 const candidateRoute = require("./candidateRoute");
 
@@ -19,7 +19,7 @@ const mountRoutes = (app) => {
 
   app.use("/api/v1/season", seasonRoute);
   app.use("/api/v1/musical", musicalRoute);
-
+  app.use("/api/v1/repetition", repetitionRoute);
 };
 
 module.exports = mountRoutes;
