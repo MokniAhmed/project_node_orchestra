@@ -24,6 +24,7 @@ exports.createCondidateValidator = [
         if (condidate) {
           return Promise.reject(new Error("E-mail already in condidate"));
         }
+        return true;
       })
     ),
   check("birthday")
