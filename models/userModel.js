@@ -45,7 +45,10 @@ const userSchema = new mongoose.Schema(
     deleted: { type: Boolean, default: false },
     musical_instrument: String,
     nb_absence: { type: Number, default: 0 },
-    status_elimination: { type: String, enum: ["absence", "disciplinary"] },
+    status_elimination: {
+      type: String,
+      enum: ["absence", "disciplinary"],
+    },
     group_pupitre: {
       type: String,
       enum: ["first", "second", "third", "fourth"],

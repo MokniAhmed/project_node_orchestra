@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+
 const concertSchema = new mongoose.Schema(
   {
     season: { type: mongoose.Schema.ObjectId, ref: "Season" },
@@ -7,10 +8,11 @@ const concertSchema = new mongoose.Schema(
     location: String,
     description: String,
     music: [{ type: mongoose.Schema.ObjectId, ref: "Musical" }],
-    list_final: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+   //// list_final: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
 
 const Concert = mongoose.model("Concert", concertSchema);
+
 module.exports = Concert;
