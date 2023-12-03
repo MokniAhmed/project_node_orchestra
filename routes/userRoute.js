@@ -23,32 +23,28 @@ const {
   deleteLoggedUserData,
 } = require("../services/userService");
 
-const authService = require("../middlewares/authMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-router.use(authService.protect);
+// router.use(authMiddleware.protect);
 
 router.get("/getMe", getLoggedUserData, getUser);
 router.put("/changeMyPassword", updateLoggedUserPassword);
-router.put("/updateMe", updateLoggedUserValidator, updateLoggedUserData);
+router.put("/updateMe", updateLoggedUserData);
 router.delete("/deleteMe", deleteLoggedUserData);
 
 // Admin
-router.use(authService.allowedTo("admin", "manager"));
+// router.use(authMiddleware.allowedTo("admin"));
 router.put(
   "/changePassword/:id",
   changeUserPasswordValidator,
   changeUserPassword
 );
-router
-  .route("/")
-  .get(getUsers)
-  .post(uploadUserImage, resizeImage, createUserValidator, createUser);
+router.route("/").get(getUsers).post(createUser);
 router
   .route("/:id")
   .get(getUserValidator, getUser)
-  .put(uploadUserImage, resizeImage, updateUserValidator, updateUser)
   .delete(deleteUserValidator, deleteUser);
 
 module.exports = router;

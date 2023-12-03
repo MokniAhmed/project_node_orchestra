@@ -54,6 +54,7 @@ const userSchema = new mongoose.Schema(
       enum: ["first", "second", "third", "fourth"],
     },
     status: [{ statuts: String, date: Date }],
+    active: { type: Boolean, default: true },
   },
 
   { timestamps: true }

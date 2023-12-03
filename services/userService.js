@@ -45,30 +45,7 @@ exports.getUser = factory.getOne(User);
 // @access  Private/Admin
 exports.createUser = factory.createOne(User);
 
-// @desc    Update specific user
-// @route   PUT /api/v1/users/:id
-// @access  Private/Admin
-exports.updateUser = asyncHandler(async (req, res, next) => {
-  const document = await User.findByIdAndUpdate(
-    req.params.id,
-    {
-      name: req.body.name,
-      slug: req.body.slug,
-      phone: req.body.phone,
-      email: req.body.email,
-      profileImg: req.body.profileImg,
-      role: req.body.role,
-    },
-    {
-      new: true,
-    }
-  );
 
-  if (!document) {
-    return next(new ApiError(`No document for this id ${req.params.id}`, 404));
-  }
-  res.status(200).json({ data: document });
-});
 
 exports.changeUserPassword = asyncHandler(async (req, res, next) => {
   const document = await User.findByIdAndUpdate(
