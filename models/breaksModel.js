@@ -9,7 +9,7 @@ const breakSchema = new mongoose.Schema(
     end_date: { type: Date, required: [true, "provide a ending date."] },
     status_request: {
       type: String,
-      enum: ["rejected,accepted,pending"],
+      enum: ["rejected", "accepted", "pending"],
       default: "pending",
     },
   },

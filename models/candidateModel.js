@@ -36,7 +36,6 @@ const candidateSchema = new mongoose.Schema(
       type: String,
       enum: ["first", "second", "third", "fourth"],
     },
-    list_muted: [{ type: Date }],
     status: {
       type: String,
       enum: ["accepted", "rejected", "accepted_confimed", "cancelled"],
