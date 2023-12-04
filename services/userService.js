@@ -1,16 +1,16 @@
-const asyncHandler = require('express-async-handler');
-const { v4: uuidv4 } = require('uuid');
-const sharp = require('sharp');
-const bcrypt = require('bcryptjs');
+const asyncHandler = require("express-async-handler");
+const { v4: uuidv4 } = require("uuid");
+const sharp = require("sharp");
+const bcrypt = require("bcryptjs");
 
-const factory = require('./handlersFactory');
-const ApiError = require('../utils/apiError');
-const { uploadSingleImage } = require('../middlewares/uploadImageMiddleware');
-const createToken = require('../utils/createToken');
-const User = require('../models/userModel');
+const factory = require("./handlersFactory");
+const ApiError = require("../utils/apiError");
+const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
+const createToken = require("../utils/createToken");
+const User = require("../models/userModel");
 
 // Upload single image
-exports.uploadUserImage = uploadSingleImage('profileImg');
+exports.uploadUserImage = uploadSingleImage("profileImg");
 
 // Image processing
 exports.resizeImage = asyncHandler(async (req, res, next) => {
@@ -19,7 +19,7 @@ exports.resizeImage = asyncHandler(async (req, res, next) => {
   if (req.file) {
     await sharp(req.file.buffer)
       .resize(600, 600)
-      .toFormat('jpeg')
+      .toFormat("jpeg")
       .jpeg({ quality: 95 })
       .toFile(`uploads/users/${filename}`);
 
@@ -44,8 +44,6 @@ exports.getUser = factory.getOne(User);
 // @route   POST  /api/v1/users
 // @access  Private/Admin
 exports.createUser = factory.createOne(User);
-
-
 
 exports.changeUserPassword = asyncHandler(async (req, res, next) => {
   const document = await User.findByIdAndUpdate(
@@ -123,5 +121,20 @@ exports.updateLoggedUserData = asyncHandler(async (req, res, next) => {
 exports.deleteLoggedUserData = asyncHandler(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user._id, { active: false });
 
-  res.status(204).json({ status: 'Success' });
+  res.status(204).json({ status: "Success" });
+});
+
+// @desc    update user status
+// @route   put /api/v1/users/status/
+// @access  Private/Protect
+exports.updateStatus = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const role = req.body;
+  const user = await User.findByIdAndUpdate(req.params.id, role, {
+    new: true,
+  });
+  if (!user) {
+    return next(new ApiError(`No user for this id ${req.params.id}`, 404));
+  }
+  res.status(204).json({ message: "success" });
 });
