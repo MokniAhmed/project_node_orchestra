@@ -21,6 +21,7 @@ const {
   updateLoggedUserPassword,
   updateLoggedUserData,
   deleteLoggedUserData,
+  updateStatus,
 } = require("../services/userService");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -33,6 +34,7 @@ router.get("/getMe", getLoggedUserData, getUser);
 router.put("/changeMyPassword", updateLoggedUserPassword);
 router.put("/updateMe", updateLoggedUserData);
 router.delete("/deleteMe", deleteLoggedUserData);
+router.put("/status/:id", updateStatus);
 
 // Admin
 // router.use(authMiddleware.allowedTo("admin"));
