@@ -5,9 +5,33 @@ const ApiError = require("../utils/apiError");
 const factory = require("./handlersFactory");
 
 const Repetition = require("../models/repetitionModel");
+const User = require("../models/userModel");
+const { sendNotification } = require("../utils/sendNotification");
 
 // test
-exports.createRepetition = factory.createOne(Repetition);
+exports.createRepetition = asyncHandler(async (req, res, next) => {
+  const { dateNotif, ...rest } = req.body;
+  const repetition = await Repetition.create({ ...rest });
+  const listUsers = await User.find({
+    // list_muted: "2015-10-19T23:00:00.000Z",
+    list_muted: { $ne: "2015-10-19T23:00:00.000Z" },
+  });
+  sendNotification({ listUsers, dateNotif });
+
+  res.status(200).json({ data: repetition });
+});
+
+
+
+
+
+
+
+
+
+
+
+
 exports.updateRepetition = factory.updateOne(Repetition);
 exports.deleteRepetition = factory.deleteOne(Repetition);
 exports.getAllRepetition = factory.getAll(Repetition);
