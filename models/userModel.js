@@ -39,6 +39,7 @@ const userSchema = new mongoose.Schema(
         "manager_choeur",
       ],
     },
+    list_muted: [{ type: Date }],
 
     address: { type: String, required: [true, "address need to be provided"] },
     musical_kbowledge: [{ type: String }],
