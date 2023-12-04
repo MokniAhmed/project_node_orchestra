@@ -1,8 +1,10 @@
+const QRCode = require("qrcode");
 const asyncHandler = require("express-async-handler");
+const ApiError = require("../utils/apiError");
+
 const factory = require("./handlersFactory");
 
 const Repetition = require("../models/repetitionModel");
-const ApiError = require("../utils/apiError");
 
 // test
 exports.createRepetition = factory.createOne(Repetition);
@@ -10,3 +12,24 @@ exports.updateRepetition = factory.updateOne(Repetition);
 exports.deleteRepetition = factory.deleteOne(Repetition);
 exports.getAllRepetition = factory.getAll(Repetition);
 exports.getRepeitionById = factory.getOne(Repetition);
+exports.getQrCode = asyncHandler(async (req, res, next) => {
+  const url = `localhost:8000/api/v1/presence/qrcode/${req.params.id}`;
+  QRCode.toDataURL(url, (err, qrCodeUrl) => {
+    if (err) {
+      next(new ApiError("there s error in the generation of code ", 500));
+    } else {
+      res.send(`
+      <!DOCTYPE HTML>
+      <html>
+      <head>
+            <title>QR Code Generator </title>
+      </head>
+      <body>
+      <img src="${qrCodeUrl}" alt="QR Code" />
+        <p> Scan the QR Code to indicate the presence </p>
+      </body>
+      </html>
+        `);
+    }
+  });
+});
