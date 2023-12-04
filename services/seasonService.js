@@ -1,7 +1,6 @@
 const asyncHandler = require("express-async-handler");
-const ApiError = require("../utils/apiError");
+
 const Season = require("../models/seasonModel");
-const { findOne } = require("../models/candidateModel");
 
 // @desc    Create new season & desable last season
 // @route   POST /api/v1/season/
