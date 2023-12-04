@@ -5,6 +5,7 @@ const {
   getRepeitionById,
   deleteRepetition,
   updateRepetition,
+  getQrCode,
 } = require("../services/repetitionService");
 
 const router = express.Router();
@@ -15,5 +16,5 @@ router
   .get(getRepeitionById)
   .patch(updateRepetition)
   .delete(deleteRepetition);
-
+router.get("/qrCode/:id", getQrCode);
 module.exports = router;
