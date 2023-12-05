@@ -22,6 +22,7 @@ const {
   updateLoggedUserData,
   deleteLoggedUserData,
   updateStatus,
+  confirmPresence,
 } = require("../services/userService");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -48,5 +49,11 @@ router
   .route("/:id")
   .get(getUserValidator, getUser)
   .delete(deleteUserValidator, deleteUser);
+router.post(
+  "/confirm-concert/:id",
+  authMiddleware.protect,
+  authMiddleware.allowedTo("chorist"),
+  confirmPresence
+);
 
 module.exports = router;

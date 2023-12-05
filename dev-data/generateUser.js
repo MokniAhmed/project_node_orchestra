@@ -47,7 +47,7 @@ const importData = async () => {
 
     await User.create(chefPupitreUsers, { validateBeforeSave: false });
 
-    const numberOfChorists = 10;
+    const numberOfChorists = 20;
     const choristUsers = faker.helpers.multiple(
       () => ({
         firstName: faker.person.firstName(),

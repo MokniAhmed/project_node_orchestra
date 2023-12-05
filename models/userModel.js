@@ -40,7 +40,6 @@ const userSchema = new mongoose.Schema(
       ],
     },
     list_muted: [{ type: Date }],
-
     address: { type: String, required: [true, "address need to be provided"] },
     musical_kbowledge: [{ type: String }],
     deleted: { type: Boolean, default: false },
@@ -48,7 +47,8 @@ const userSchema = new mongoose.Schema(
     nb_absence: { type: Number, default: 0 },
     status_elimination: {
       type: String,
-      enum: ["absence", "disciplinary"],
+      enum: ["absence", "disciplinary", "none"],
+      default: "none",
     },
     group_pupitre: {
       type: String,
