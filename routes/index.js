@@ -9,6 +9,9 @@ const concertRoute = require("./concertRoute");
 
 const musicalRoute = require("./musicalRoute");
 const repetitionRoute = require("./repetitionRouter");
+const breaksRoute = require("./breaksRoute");
+
+const presenceRouter = require("./presenceRouter");
 
 
 const candidateRoute = require("./candidateRoute");
@@ -29,6 +32,8 @@ const mountRoutes = (app) => {
 
   app.use("/api/v1/repetition", repetitionRoute);
 
+  app.use("/api/v1/breaks", breaksRoute);
+  app.use("/api/v1/presence", presenceRouter);
 };
 
 module.exports = mountRoutes;
