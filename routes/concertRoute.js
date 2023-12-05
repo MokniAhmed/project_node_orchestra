@@ -7,6 +7,7 @@ const {
   deleteConcertById,
   updateConcertById,
   checkDisponiblilte,
+  getFinalList,
 } = require("../services/concertService");
 const {
   createConcertValidator,
@@ -20,5 +21,5 @@ router.get("/:id", getConcertById);
 router.delete("/:id", deleteConcertById);
 router.put("/:id", updateConcertById);
 router.post("/confirm/:id", checkDisponiblilte);
-
+router.get("/final-list/:id", getFinalList);
 module.exports = router;
