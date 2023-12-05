@@ -169,6 +169,8 @@ exports.eliminationStatus = asyncHandler(async (req, res, next) => {
   await user.save();
 
   res.status(204).json({ message: "success" });
+});
+
 // @desc    confirm disponibility
 // @route   put /api/v1/users/confirm/id
 // @access  Private/Protect
