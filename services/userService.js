@@ -141,36 +141,6 @@ exports.updateStatus = asyncHandler(async (req, res, next) => {
   res.status(204).json({ message: "success" });
 });
 
-// @desc    update elimination status
-// @route   put /api/v1/users/elimination_status/
-// @access  Private/Protect
-exports.eliminationStatus = asyncHandler(async (req, res, next) => {
-  // find user by id
-  const user = await User.findById(req.params.id);
-  let nbAbs = user.nb_absence;
-
-  // find current active season
-  const ActiveSeason = await Season.findOne({ state_season: "new" });
-
-  // get max absence per season
-  const maxAbs = ActiveSeason.max_absence;
-
-  //change elimination status
-  if (nbAbs > maxAbs) {
-    user.status_elimination = "absence";
-  } else {
-    user.status_elimination = "disciplinary";
-  }
-  console.log(user.status_elimination);
-
-  if (!user) {
-    return next(new ApiError(`No user for this id ${req.params.id}`, 404));
-  }
-  await user.save();
-
-  res.status(204).json({ message: "success" });
-});
-
 // @desc    confirm disponibility
 // @route   put /api/v1/users/confirm/id
 // @access  Private/Protect
@@ -194,7 +164,7 @@ exports.confirmPresence = asyncHandler(async (req, res, next) => {
 exports.eliminationStatus = asyncHandler(async (req, res, next) => {
   // find user by id
   const user = await User.findById(req.params.id);
-  let nbAbs = user.nb_absence;
+  const nbAbs = user.nb_absence;
 
   // find current active season
   const ActiveSeason = await Season.findOne({ state_season: "new" });
