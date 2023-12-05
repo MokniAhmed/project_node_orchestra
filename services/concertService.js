@@ -6,6 +6,7 @@ const sendEmail = require("../utils/sendEmail");
 const factory = require("./handlersFactory");
 const { converExcelToJson } = require("../utils/ExcelToJson");
 const ApiError = require("../utils/apiError");
+
 // @desc    Create Concert
 // @route   POST /api/v1/concert/
 // @access  public/user
@@ -85,4 +86,31 @@ exports.checkDisponiblilte = asyncHandler(async (req, res, next) => {
   res
     .status(200)
     .json({ status: "sucess", message: " checking mail has been sent. " });
+});
+
+// @desc    list chorist final each pupitre /all chorist
+// @route   Get /api/v1/concert/final-list/id/?pupitre=first-
+// @access  public/Admin
+exports.getFinalList = asyncHandler(async (req, res, next) => {
+  const concertId = req.params.id;
+  const groupPupitreFilter = req.query.pupitre;
+
+  let filter = {};
+  if (groupPupitreFilter) {
+    filter = { group_pupitre: groupPupitreFilter };
+  }
+
+  const concert = await Concert.findById(concertId)
+    .select("list_final")
+    .populate({
+      path: "list_final",
+      match: filter,
+      select: "firstName lastName group_pupitre",
+    });
+
+  if (!concert) {
+    return next(new ApiError("No concert with this id", 400));
+  }
+
+  res.status(200).json({ results: concert.length, data: concert.list_final });
 });
