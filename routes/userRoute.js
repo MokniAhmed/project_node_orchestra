@@ -23,6 +23,7 @@ const {
   deleteLoggedUserData,
   updateStatus,
   eliminationStatus,
+  updateTestitureVocale,
 } = require("../services/userService");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -37,6 +38,7 @@ router.put("/updateMe", updateLoggedUserData);
 router.delete("/deleteMe", deleteLoggedUserData);
 router.put("/status/:id", updateStatus);
 router.put("/elimination_status/:id", eliminationStatus);
+router.put("/testiture/:id", updateTestitureVocale);
 
 // Admin
 // router.use(authMiddleware.allowedTo("admin"));
