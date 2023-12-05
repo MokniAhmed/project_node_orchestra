@@ -187,3 +187,35 @@ exports.confirmPresence = asyncHandler(async (req, res, next) => {
     .status(200)
     .json({ status: "sucess", message: "added to the final list" });
 });
+
+// @desc    update testiture vocale
+// @route   put /api/v1/users/testiture/
+// @access  Private/Protect
+exports.eliminationStatus = asyncHandler(async (req, res, next) => {
+  // find user by id
+  const user = await User.findById(req.params.id);
+  let nbAbs = user.nb_absence;
+
+  // find current active season
+  const ActiveSeason = await Season.findOne({ state_season: "new" });
+
+  // get max absence per season
+  const maxAbs = ActiveSeason.max_absence;
+
+  //change elimination status
+  if (nbAbs > maxAbs) {
+    user.status_elimination = "absence";
+  } else {
+    user.status_elimination = "disciplinary";
+  }
+  console.log(user.status_elimination);
+
+  if (!user) {
+    return next(new ApiError(`No user for this id ${req.params.id}`, 404));
+  }
+  await user.save();
+
+  res.status(204).json({ message: "success" });
+});
+
+exports.updateTestitureVocale = factory.updateOne(User);
