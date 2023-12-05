@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { v4: uuidv4 } = require("uuid");
 const sharp = require("sharp");
 const bcrypt = require("bcryptjs");
-
+const Concert = require("../models/concertModel");
 const factory = require("./handlersFactory");
 const ApiError = require("../utils/apiError");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
@@ -169,6 +169,21 @@ exports.eliminationStatus = asyncHandler(async (req, res, next) => {
   await user.save();
 
   res.status(204).json({ message: "success" });
+// @desc    confirm disponibility
+// @route   put /api/v1/users/confirm/id
+// @access  Private/Protect
+exports.confirmPresence = asyncHandler(async (req, res, next) => {
+  const concert = await Concert.findById(req.params.id);
+  if (!concert) next(new ApiError("no concert found with this ID.", 400));
+  const { list_final: listFinal, list_candidate: candidateList } = concert;
+  if (!candidateList.includes(req.user._id))
+    next(new ApiError("your not invited ", 403));
+  listFinal.push(req.user._id);
+  concert.list_final = listFinal;
+  await concert.save();
+  res
+    .status(200)
+    .json({ status: "sucess", message: "added to the final list" });
 });
 
 // @desc    update testiture vocale

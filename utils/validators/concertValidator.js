@@ -15,8 +15,8 @@ exports.createConcertValidator = [
     .withMessage("Too short name ")
     .custom((val, { req }) =>
       Concert.findOne({ name: val, season: req.body.season }).then(
-        (Concert) => {
-          if (Concert) {
+        (concert) => {
+          if (concert) {
             return Promise.reject(new Error("concert exists !"));
           }
         }
