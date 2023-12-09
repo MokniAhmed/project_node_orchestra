@@ -8,7 +8,6 @@ const ApiError = require("../utils/apiError");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const createToken = require("../utils/createToken");
 const User = require("../models/userModel");
-const season = require("../models/seasonModel");
 const Season = require("../models/seasonModel");
 
 // Upload single image
