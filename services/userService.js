@@ -129,7 +129,6 @@ exports.deleteLoggedUserData = asyncHandler(async (req, res, next) => {
 // @route   put /api/v1/users/status/
 // @access  Private/Protect
 exports.updateStatus = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
   const role = req.body;
   const user = await User.findByIdAndUpdate(req.params.id, role, {
     new: true,

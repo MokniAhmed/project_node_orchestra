@@ -21,17 +21,6 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: repetition });
 });
 
-
-
-
-
-
-
-
-
-
-
-
 exports.updateRepetition = factory.updateOne(Repetition);
 exports.deleteRepetition = factory.deleteOne(Repetition);
 exports.getAllRepetition = factory.getAll(Repetition);
