@@ -1,22 +1,23 @@
 const mongoose = require("mongoose");
 
-const absentSchema = new mongoose.Schema(
+const historicSchema = new mongoose.Schema(
   {
     user_sender: { type: mongoose.Schema.ObjectId, ref: "User" },
-    responsible: { type: mongoose.Schema.ObjectId, ref: "User" },
-    reason: { type: String, required: [true, "provide a reason ."] },
+    pupitre: { type: String, enum: ["first", "second", "third", "fourth"] },
+    reason: { type: String },
     event: { type: String, enum: ["rep", "concert"] },
     rep: { type: mongoose.Schema.ObjectId, ref: "Repetition" },
     concert: { type: mongoose.Schema.ObjectId, ref: "Concert" },
     date: Date,
-    status_request: {
+    status: {
       type: String,
-      enum: ["rejected,accepted,pending"],
-      default: "pending",
+      enum: ["absent", "present", "absent_demanded"],
+      default: "absent",
     },
+    music: [{ type: mongoose.Schema.ObjectId, ref: "Musical" }],
   },
   { timestamps: true }
 );
 
-const Absent = mongoose.model("Absent", absentSchema);
-module.exports = Absent;
+const Historic = mongoose.model("Historic", historicSchema);
+module.exports = Historic;
