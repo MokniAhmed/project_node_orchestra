@@ -8,6 +8,7 @@ const Repetition = require("../models/repetitionModel");
 const User = require("../models/userModel");
 const Historic = require("../models/historicModel");
 const { sendNotification } = require("../utils/sendNotification");
+const Concert = require("../models/concertModel");
 
 // test
 exports.createRepetition = asyncHandler(async (req, res, next) => {
@@ -34,6 +35,8 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
               </div>`,
   });
 
+  const concert = await Concert.findById(repetition.concert).select("season");
+
   await Promise.all(
     listUsers.map(async (user) => {
       await Historic.create({
@@ -43,6 +46,8 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
         date: repetition.day,
         music: repetition.music,
         rep: repetition._id,
+        concert: repetition.concert,
+        season: concert.season,
       });
     })
   );

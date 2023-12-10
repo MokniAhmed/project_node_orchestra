@@ -11,10 +11,7 @@ exports.markPrsence = asyncHandler(async (req, res, next) => {
   const repetition = await Repetition.findById(req.params.id);
   if (!repetition)
     next(new ApiError("there s no repetition with this ID.", 400));
-  /* const { end_rep: endingRep } = repetition;
-  if (Date.now() > endingRep + 5 * 60 * 1000) {
-    next(new ApiError("this no valid anymore ", 400));
-  }*/
+
   repetition.list_presence.push(req.user.id);
   await repetition.save();
   res
@@ -72,3 +69,5 @@ exports.demandeAbsent = asyncHandler(async (req, res, next) => {
   if (!historic) next(new ApiError("no historic with this data enter.", 400));
   res.status(200).json({ data: historic });
 });
+
+exports.demandeAbsent = asyncHandler(async (req, res, next) => {});
