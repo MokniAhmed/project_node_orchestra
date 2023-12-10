@@ -4,34 +4,55 @@ const Repetition = require("../models/repetitionModel");
 const User = require("../models/userModel");
 const Historic = require("../models/historicModel");
 
-// @desc    add presence to the repetition
-// @route   POST /api/v1/presence/
+// @desc    add presence to the repetition & concert
+// @route   PUT /api/v1/presence/qrcode
 // @access  public/chorist
 exports.markPrsence = asyncHandler(async (req, res, next) => {
-  const repetition = await Repetition.findById(req.params.id);
-  if (!repetition)
-    next(new ApiError("there s no repetition with this ID.", 400));
+  const { event, rep, concert } = req.body;
 
-  repetition.list_presence.push(req.user.id);
-  await repetition.save();
-  res
-    .status(200)
-    .json({ status: "sucess", message: "presence has added successfully" });
+  let historic = null;
+  if (event === "rep") {
+    historic = await Historic.findOneAndUpdate(
+      {
+        rep,
+        event,
+        user_sender: req.user._id,
+      },
+      {
+        status: "present",
+      },
+      { new: true }
+    );
+  } else {
+    historic = await Historic.findOneAndUpdate(
+      {
+        concert,
+        event,
+        user_sender: req.user._id,
+      },
+      {
+        status: "present",
+      },
+      { new: true }
+    );
+  }
+  if (!historic) next(new ApiError("no historic with this data enter.", 400));
+  res.status(200).json({ data: historic });
 });
 
-// @desc    add presence to the repetition by email
-// @route   POST /api/v1/presence/
+// @desc    add presence to the repetition & concert 
+// @route   POST /api/v1/presence/add-manualy/:id
 // @access  private/admin-chef-chorist
 exports.addPrsenceManualy = asyncHandler(async (req, res, next) => {
-  const repetition = await Repetition.findById(req.params.id);
-  if (!repetition) next(new ApiError("no repetition with this ID.", 400));
-  const choristId = await User.findOne({ email: req.body.email }).select("_id");
-  if (!choristId) next(new ApiError("no chorist with this Email .", 400));
-  const { list_presence: listPresence } = repetition;
-  listPresence.push(choristId);
-  repetition.list_presence = listPresence;
-  await repetition.save();
-  res.status(200).json({ message: "presence has been added sucessfulyy " });
+  const historic = await Historic.findByIdAndUpdate(
+    req.params.id,
+    {
+      status: "present",
+    },
+    { new: true }
+  );
+  if (!historic) next(new ApiError("no historic with this Id.", 400));
+  res.status(200).json({ data: historic });
 });
 
 // @desc    demande absent to rep or concert
