@@ -23,6 +23,11 @@ const {
   deleteLoggedUserData,
   updateStatus,
   createNotificationRep,
+
+  eliminationStatus,
+  updateTestitureVocale,
+
+  confirmPresence,
 } = require("../services/userService");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -36,6 +41,8 @@ router.put("/changeMyPassword", updateLoggedUserPassword);
 router.put("/updateMe", updateLoggedUserData);
 router.delete("/deleteMe", deleteLoggedUserData);
 router.put("/status/:id", updateStatus);
+router.put("/elimination_status/:id", eliminationStatus);
+router.put("/testiture/:id", updateTestitureVocale);
 
 // Admin
 // router.use(authMiddleware.allowedTo("admin"));
@@ -49,6 +56,12 @@ router
   .route("/:id")
   .get(getUserValidator, getUser)
   .delete(deleteUserValidator, deleteUser);
+router.post(
+  "/confirm-concert/:id",
+  authMiddleware.protect,
+  authMiddleware.allowedTo("chorist"),
+  confirmPresence
+);
 
 router.put("/notification/:id", authMiddleware.protect, createNotificationRep);
 module.exports = router;

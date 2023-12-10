@@ -11,9 +11,21 @@ const repetitionSchema = new mongoose.Schema(
     end_rep: { type: Date },
     day: Date,
     group_participant: [
-      { type: String, enum: ["first", "second", "third", "fourth"] },
+      {
+        name: {
+          type: String,
+          enum: ["first", "second", "third", "fourth"],
+        },
+        percentage: {
+          type: Number,
+          min: 0,
+          max: 100,
+          default: 100,
+        },
+      },
     ],
-    list_presence: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+    list_invited: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+    music: [{ type: mongoose.Schema.ObjectId, ref: "Musical" }],
   },
   { timestamps: true }
 );

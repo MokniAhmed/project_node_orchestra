@@ -11,6 +11,7 @@ const { sendNotification } = require("../utils/sendNotification");
 // test
 exports.createRepetition = asyncHandler(async (req, res, next) => {
   const { dateNotif, ...rest } = req.body;
+
   const repetition = await Repetition.create({ ...rest });
 
   const listUsers = await User.find({
@@ -27,19 +28,11 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
                    you have rep
               </div>`,
   });
+
+
+
   res.status(200).json({ data: repetition });
 });
-
-
-
-
-
-
-
-
-
-
-
 
 exports.updateRepetition = factory.updateOne(Repetition);
 exports.deleteRepetition = factory.deleteOne(Repetition);

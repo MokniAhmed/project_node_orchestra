@@ -6,6 +6,8 @@ const {
   sendNotification,
   sendMultipleNotification,
 } = require("../utils/sendNotification");
+
+
 const factory = require("./handlersFactory");
 const ApiError = require("../utils/apiError");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
@@ -13,6 +15,7 @@ const createToken = require("../utils/createToken");
 const User = require("../models/userModel");
 const Concert = require("../models/concertModel");
 const Repetition = require("../models/repetitionModel");
+const Season = require("../models/seasonModel");
 
 // Upload single image
 exports.uploadUserImage = uploadSingleImage("profileImg");
@@ -133,7 +136,6 @@ exports.deleteLoggedUserData = asyncHandler(async (req, res, next) => {
 // @route   put /api/v1/users/status/
 // @access  Private/Protect
 exports.updateStatus = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
   const role = req.body;
   const user = await User.findByIdAndUpdate(req.params.id, role, {
     new: true,
@@ -182,3 +184,51 @@ exports.createNotificationRep = asyncHandler(async (req, res, next) => {
   });
   res.status(200).json({ message: "jobs created" });
 });
+// @desc    confirm disponibility
+// @route   put /api/v1/users/confirm/id
+// @access  Private/Protect
+exports.confirmPresence = asyncHandler(async (req, res, next) => {
+  const concert = await Concert.findById(req.params.id);
+  if (!concert) next(new ApiError("no concert found with this ID.", 400));
+  const { list_final: listFinal, list_candidate: candidateList } = concert;
+  if (!candidateList.includes(req.user._id))
+    next(new ApiError("your not invited ", 403));
+  listFinal.push(req.user._id);
+  concert.list_final = listFinal;
+  await concert.save();
+  res
+    .status(200)
+    .json({ status: "sucess", message: "added to the final list" });
+});
+
+// @desc    update testiture vocale
+// @route   put /api/v1/users/testiture/
+// @access  Private/Protect
+exports.eliminationStatus = asyncHandler(async (req, res, next) => {
+  // find user by id
+  const user = await User.findById(req.params.id);
+  const nbAbs = user.nb_absence;
+
+  // find current active season
+  const ActiveSeason = await Season.findOne({ state_season: "new" });
+
+  // get max absence per season
+  const maxAbs = ActiveSeason.max_absence;
+
+  //change elimination status
+  if (nbAbs > maxAbs) {
+    user.status_elimination = "absence";
+  } else {
+    user.status_elimination = "disciplinary";
+  }
+  console.log(user.status_elimination);
+
+  if (!user) {
+    return next(new ApiError(`No user for this id ${req.params.id}`, 404));
+  }
+  await user.save();
+
+  res.status(204).json({ message: "success" });
+});
+
+exports.updateTestitureVocale = factory.updateOne(User);
