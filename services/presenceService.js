@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const Repetition = require("../models/repetitionModel");
 const User = require("../models/userModel");
+const Historic = require("../models/historicModel");
 
 // @desc    add presence to the repetition
 // @route   POST /api/v1/presence/
@@ -36,4 +37,37 @@ exports.addPrsenceManualy = asyncHandler(async (req, res, next) => {
 // @desc    demande absent to rep or concert
 // @route   POST /api/v1/presence/demandeAbsent
 // @access  private/chorist
+exports.demandeAbsent = asyncHandler(async (req, res, next) => {
+  const { event, rep, concert } = req.body;
+
+  let historic = null;
+  if (event === "rep") {
+    historic = await Historic.findOneAndUpdate(
+      {
+        rep,
+        event,
+        user_sender: req.user._id,
+      },
+      {
+        status: "absent_demanded",
+      },
+      { new: true }
+    );
+  } else {
+    historic = await Historic.findOneAndUpdate(
+      {
+        concert,
+        event,
+        user_sender: req.user._id,
+      },
+      {
+        status: "absent_demanded",
+      },
+      { new: true }
+    );
+  }
+  if (!historic) next(new ApiError("no historic with this data enter.", 400));
+  res.status(200).json({ data: historic });
+});
+
 exports.demandeAbsent = asyncHandler(async (req, res, next) => {});
