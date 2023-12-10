@@ -22,6 +22,7 @@ const {
   updateLoggedUserData,
   deleteLoggedUserData,
   updateStatus,
+  createNotificationRep,
 } = require("../services/userService");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -49,4 +50,5 @@ router
   .get(getUserValidator, getUser)
   .delete(deleteUserValidator, deleteUser);
 
+router.put("/notification/:id", authMiddleware.protect, createNotificationRep);
 module.exports = router;
