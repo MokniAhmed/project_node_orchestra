@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const historicSchema = new mongoose.Schema(
   {
+    season: { type: mongoose.Schema.ObjectId, ref: "Season" },
     user_sender: { type: mongoose.Schema.ObjectId, ref: "User" },
     pupitre: { type: String, enum: ["first", "second", "third", "fourth"] },
     reason: { type: String },
