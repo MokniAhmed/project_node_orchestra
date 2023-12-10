@@ -16,7 +16,7 @@ exports.createConcert = asyncHandler(async (req, res, next) => {
   await Promise.all(
     listmusic.map(async (music) => {
       const newMusic = await Musical.create(music);
-      req.body.music.push(newMusic._id);
+      concert.music.push(newMusic._id);
     })
   );
   // 2- save

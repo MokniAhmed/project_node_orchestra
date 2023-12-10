@@ -40,7 +40,6 @@ const userSchema = new mongoose.Schema(
       ],
     },
     list_muted: [{ type: Date }],
-
     address: { type: String, required: [true, "address need to be provided"] },
     musical_kbowledge: [{ type: String }],
     deleted: { type: Boolean, default: false },
@@ -65,6 +64,7 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   // Hashing user password
   this.password = await bcrypt.hash(this.password, 12);
+
   next();
 });
 
