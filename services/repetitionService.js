@@ -13,12 +13,23 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
   const { dateNotif, ...rest } = req.body;
 
   const repetition = await Repetition.create({ ...rest });
+
   const listUsers = await User.find({
     // list_muted: "2015-10-19T23:00:00.000Z",
     list_muted: { $ne: "2015-10-19T23:00:00.000Z" },
   });
+  const users = listUsers.map((user) => user.email);
+  sendNotification({
+    users,
+    dateNotif,
+    subject: "notifer admin",
+    message: "you have repetition ",
+    tamplate: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
+                   you have rep
+              </div>`,
+  });
 
-  //sendNotification({ listUsers, dateNotif });
+
 
   res.status(200).json({ data: repetition });
 });

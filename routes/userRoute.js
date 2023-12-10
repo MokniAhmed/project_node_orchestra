@@ -22,6 +22,8 @@ const {
   updateLoggedUserData,
   deleteLoggedUserData,
   updateStatus,
+  createNotificationRep,
+
   eliminationStatus,
   updateTestitureVocale,
 
@@ -61,4 +63,5 @@ router.post(
   confirmPresence
 );
 
+router.put("/notification/:id", authMiddleware.protect, createNotificationRep);
 module.exports = router;

@@ -1,6 +1,6 @@
 const { check } = require("express-validator");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
-const User = require("../../models/userModel");
+// const User = require("../../models/userModel");
 
 exports.loginValidator = [
   check("email").notEmpty().withMessage("Email required"),

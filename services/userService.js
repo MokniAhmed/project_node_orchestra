@@ -2,12 +2,19 @@ const asyncHandler = require("express-async-handler");
 const { v4: uuidv4 } = require("uuid");
 const sharp = require("sharp");
 const bcrypt = require("bcryptjs");
-const Concert = require("../models/concertModel");
+const {
+  sendNotification,
+  sendMultipleNotification,
+} = require("../utils/sendNotification");
+
+
 const factory = require("./handlersFactory");
 const ApiError = require("../utils/apiError");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const createToken = require("../utils/createToken");
 const User = require("../models/userModel");
+const Concert = require("../models/concertModel");
+const Repetition = require("../models/repetitionModel");
 const Season = require("../models/seasonModel");
 
 // Upload single image
@@ -139,6 +146,44 @@ exports.updateStatus = asyncHandler(async (req, res, next) => {
   res.status(204).json({ message: "success" });
 });
 
+// @desc    create jobs to send notification
+// @route   put /api/v1/users/notification/:id
+// @access  Private/Protect
+exports.createNotificationRep = asyncHandler(async (req, res, next) => {
+  const { event, dateNotif, nbrNotif } = req.body;
+  let events = null;
+  if (event === "concert") {
+    events = await Concert.findById(req.params.id);
+    if (!events) {
+      return next(new ApiError(`No concert for this id ${req.params.id}`, 404));
+    }
+  } else {
+    events = await Repetition.findById(req.params.id);
+    if (!events) {
+      return next(
+        new ApiError(`No repetition for this id ${req.params.id}`, 404)
+      );
+    }
+  }
+
+  console.log(req.user.email);
+  const dateEvent = new Date(events.day);
+  const dateNotification = new Date(dateNotif);
+  console.log(dateEvent.getTime(), dateNotification.getTime());
+
+  sendMultipleNotification({
+    users: req.user.email,
+    dateNotif,
+    nbrNotif,
+    endNotif: events.day,
+    subject: "notifer admin",
+    message: "you have repetition ",
+    tamplate: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
+                   you have ${event} at ${`${dateEvent.getFullYear()}/${dateEvent.getMonth()}/${dateEvent.getDay()} at ${dateEvent.getHours()}:${dateEvent.getMinutes()}`} 
+              </div>`,
+  });
+  res.status(200).json({ message: "jobs created" });
+});
 // @desc    confirm disponibility
 // @route   put /api/v1/users/confirm/id
 // @access  Private/Protect
