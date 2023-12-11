@@ -1,7 +1,7 @@
 const QRCode = require("qrcode");
+
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
-
 const factory = require("./handlersFactory");
 
 const Repetition = require("../models/repetitionModel");
@@ -41,7 +41,7 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
     listUsers.map(async (user) => {
       await Historic.create({
         user_sender: user._id,
-        pupitre: user.pupitre,
+        pupitre: user.group_pupitre,
         event: "rep",
         date: repetition.day,
         music: repetition.music,
@@ -80,3 +80,5 @@ exports.getQrCode = asyncHandler(async (req, res, next) => {
     }
   });
 });
+
+
