@@ -1,10 +1,12 @@
 const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose");
+const factory = require("./handlersFactory");
 
 const ApiError = require("../utils/apiError");
 const Repetition = require("../models/repetitionModel");
 const User = require("../models/userModel");
 const Historic = require("../models/historicModel");
+const { arrayToJson } = require("../utils/arrayToJson");
 
 // @desc    add presence to the repetition & concert
 // @route   PUT /api/v1/presence/qrcode
@@ -117,40 +119,45 @@ exports.getPorcentagePresenceInSeasonForAnyPupitre = asyncHandler(
       },
     ]);
 
-    const transformedObject = {};
+    const transformedObject = arrayToJson(result);
 
-    result.forEach((item) => {
-      const { pupitre, status } = item._id;
-      const count = item.count;
-
-      if (!transformedObject[pupitre]) {
-        transformedObject[pupitre] = {
-          present: 0,
-          absent_demanded: 0,
-          absent: 0,
-          percentage: 0,
-        };
-      }
-
-      transformedObject[pupitre][status] = count;
-    });
-    // Calculer le pourcentage de présence
-    Object.keys(transformedObject).forEach((pupitre) => {
-      const total =
-        transformedObject[pupitre].present +
-        transformedObject[pupitre].absent_demanded +
-        transformedObject[pupitre].absent;
-
-      transformedObject[pupitre].percentage = (
-        (transformedObject[pupitre].present / total) *
-        100
-      ).toFixed(2);
-    });
     console.log(transformedObject);
     res.send({ transformedObject });
   }
 );
 
+// @desc    nbr_presence_in_Concert_for_any_pupitre
+// @route   POST /api/v1/presence/nbr_presence_in_concert_for_any_pupitre/:id
+// @access  private/chorist
+exports.getPorcentagePresenceInConcertForAnyPupitre = asyncHandler(
+  async (req, res, next) => {
+    const ObjectId = mongoose.Types.ObjectId;
 
+    const result = await Historic.aggregate([
+      {
+        $match: { concert: ObjectId(req.params.id) },
+      },
+      {
+        $group: {
+          _id: { pupitre: "$pupitre", status: "$status" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          pupitre: 1,
+        },
+      },
+    ]);
+
+    const transformedObject = arrayToJson(result);
+    res.send({ transformedObject });
+  }
+);
+
+// @desc    Get list of Historic
+// @route   GET /api/v1/presence
+// @access  Private/Admin
+exports.getHistoric = factory.getAll(Historic);
 
 
