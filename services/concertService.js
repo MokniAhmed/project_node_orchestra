@@ -3,6 +3,7 @@ const Concert = require("../models/concertModel");
 const Musical = require("../models/musicalModel");
 const User = require("../models/userModel");
 const sendEmail = require("../utils/sendEmail");
+const Historic = require("../models/historicModel");
 const factory = require("./handlersFactory");
 const { converExcelToJson } = require("../utils/ExcelToJson");
 const ApiError = require("../utils/apiError");
@@ -56,7 +57,7 @@ exports.checkDisponiblilte = asyncHandler(async (req, res, next) => {
   const chorists = await User.find({
     role: "chorist",
     status_elimination: "none",
-  }).select("email");
+  });
   const emailList = chorists.map((chorist) => chorist.email);
   const choristId = chorists.map((chorist) => chorist._id);
 
@@ -64,11 +65,25 @@ exports.checkDisponiblilte = asyncHandler(async (req, res, next) => {
 
   if (!concert) next(new ApiError("no concert with this ID", 400));
 
-  const { _id: concertId, name, location, date } = concert;
+  const { _id: concertId, name, location, date, music } = concert;
+  await Promise.all(
+    chorists.map(async (chorist) => {
+      await Historic.create({
+        user_sender: chorist._id,
+        pupitre: chorist.group_pupitre,
+        event: "concert",
+        date: date,
+        music: music,
+        concert: concertId,
+        season: concert.season,
+      });
+    })
+  );
 
   concert.list_candidate = choristId;
   await concert.save();
   const confirmUrl = `localhost:8000/api/v1/users/confirm-concert/${concertId}`;
+  const declineUrl = `localhost:8000/api/v1/users/decline-concert/${concertId}`;
 
   /*   sendEmail({
     email: emailList,

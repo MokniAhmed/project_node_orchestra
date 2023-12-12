@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 
 const repetitionSchema = new mongoose.Schema(
   {
-    concert: { type: mongoose.Schema.ObjectId, ref: "Concert" },
+    concert: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Concert",
+      required: [true, "concert must be provided ."],
+    },
     location_repetition: {
       type: String,
       required: [true, "need place of a repetition."],

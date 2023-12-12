@@ -8,23 +8,33 @@ const Repetition = require("../models/repetitionModel");
 const User = require("../models/userModel");
 const Historic = require("../models/historicModel");
 const { sendNotification } = require("../utils/sendNotification");
+const getRandomUsersBygroup = require("../utils/randomUserByGroup");
 const Concert = require("../models/concertModel");
 
 // test
 exports.createRepetition = asyncHandler(async (req, res, next) => {
-  const { dateNotif, ...rest } = req.body;
-
+  const { dateNotif, group_participant, ...rest } = req.body;
+  let nameTofiltre;
+  if (group_participant) {
+    nameTofiltre = group_participant.map((group) => group.name);
+  }
+  const concert = await Concert.findById(req.body.concert);
   const listUsers = await User.find({
     role: "chorist",
     list_muted: { $ne: req.body.day },
+    group_pupitre: { $in: nameTofiltre },
   });
-  const usersEmail = listUsers.map((user) => user.email);
-  const usersId = listUsers.map((user) => user._id);
+  const finalList = getRandomUsersBygroup(listUsers, group_participant);
+  const usersEmail = finalList.map((user) => user.email);
+  const usersId = finalList.map((user) => user._id);
 
   const repetition = await Repetition.create({
+    music: concert.music,
+    group_participant,
     ...rest,
     list_invited: usersId,
   });
+
   sendNotification({
     users: usersEmail,
     dateNotif,
@@ -35,10 +45,8 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
               </div>`,
   });
 
-  const concert = await Concert.findById(repetition.concert).select("season");
-
   await Promise.all(
-    listUsers.map(async (user) => {
+    finalList.map(async (user) => {
       await Historic.create({
         user_sender: user._id,
         pupitre: user.group_pupitre,
@@ -80,5 +88,3 @@ exports.getQrCode = asyncHandler(async (req, res, next) => {
     }
   });
 });
-
-

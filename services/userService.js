@@ -7,7 +7,6 @@ const {
   sendMultipleNotification,
 } = require("../utils/sendNotification");
 
-
 const factory = require("./handlersFactory");
 const ApiError = require("../utils/apiError");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
