@@ -129,4 +129,3 @@ exports.getFinalList = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({ results: concert.length, data: concert.list_final });
 });
-exports.getQrCodeConcert = asyncHandler;
