@@ -13,18 +13,18 @@ const ApiError = require("../utils/apiError");
 // @access  public/user
 exports.createConcert = asyncHandler(async (req, res, next) => {
   // 1- get data from request
-  const concert = { ...req.body };
+  // const concert = { ...req.body };
   // 1- get data from Excel
 
-  const listmusic = converExcelToJson(req.body.path_Excel);
+  /* const listmusic = converExcelToJson(req.body.path_Excel);
   await Promise.all(
     listmusic.map(async (music) => {
       const newMusic = await Musical.create(music);
       concert.music.push(newMusic._id);
     })
-  );
+  );*/
   // 2- save
-  const newConcert = await Concert.create(concert);
+  const newConcert = await Concert.create(req.body);
 
   // 3- send response
   res.status(200).json({ newConcert });
@@ -56,10 +56,11 @@ exports.updateConcertById = factory.updateOne(Concert);
 exports.checkDisponiblilte = asyncHandler(async (req, res, next) => {
   const chorists = await User.find({
     role: "chorist",
-    status_elimination: "none",
+    //status_elimination: "none",
   });
   const emailList = chorists.map((chorist) => chorist.email);
   const choristId = chorists.map((chorist) => chorist._id);
+  console.log(choristId);
 
   const concert = await Concert.findById(req.params.id);
 

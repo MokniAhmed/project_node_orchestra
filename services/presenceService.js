@@ -13,6 +13,7 @@ const { arrayToJson } = require("../utils/arrayToJson");
 // @access  public/chorist
 exports.markPrsence = asyncHandler(async (req, res, next) => {
   const { event, rep, concert } = req.body;
+  console.log(req.user._id);
 
   let historic = null;
   if (event === "rep") {
@@ -159,5 +160,3 @@ exports.getPorcentagePresenceInConcertForAnyPupitre = asyncHandler(
 // @route   GET /api/v1/presence
 // @access  Private/Admin
 exports.getHistoric = factory.getAll(Historic);
-
-
