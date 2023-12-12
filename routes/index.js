@@ -12,7 +12,7 @@ const repetitionRoute = require("./repetitionRouter");
 const breaksRoute = require("./breaksRoute");
 
 const presenceRouter = require("./presenceRouter");
-
+const historyRouter = require("./historyRouter");
 
 const candidateRoute = require("./candidateRoute");
 
@@ -34,6 +34,7 @@ const mountRoutes = (app) => {
 
   app.use("/api/v1/breaks", breaksRoute);
   app.use("/api/v1/presence", presenceRouter);
+  app.use("/api/v1/history", historyRouter);
 };
 
 module.exports = mountRoutes;
