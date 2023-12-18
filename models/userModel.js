@@ -43,7 +43,6 @@ const userSchema = new mongoose.Schema(
     address: { type: String, required: [true, "address need to be provided"] },
     musical_kbowledge: [{ type: String }],
     tessiture_vocale: [{ type: String }],
-
     deleted: { type: Boolean, default: false },
     musical_instrument: String,
     nb_absence: { type: Number, default: 0 },
