@@ -27,7 +27,7 @@ const musicalSchema = new mongoose.Schema(
     pupitre: [
       {
         type: String,
-        enum: ["first", "second", "third", "forth"],
+        enum: ["first", "second", "third", "fourth"],
         required: [true, "muscial work need a pupitre"],
       },
     ],
