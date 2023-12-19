@@ -286,3 +286,173 @@ exports.addPrsenceAutomatiqly = asyncHandler(async (req, res, next) => {
   );
   res.status(200).json(history);
 });
+
+// @desc    get absent etat
+// @route   POST /api/v1/history/
+// @access  private/admin
+exports.etatAbsentStat = asyncHandler(async (req, res, next) => {
+  if (!req.query.genre && !req.query.period) {
+    return next(
+      new ApiError("Request needs both genre and period queries", 400)
+    );
+  }
+  if (
+    req.query.genre !== "pupitre" &&
+    req.query.genre !== "chorist" &&
+    req.query.genre !== "general"
+  ) {
+    return next(
+      new ApiError(
+        "Invalid genre value. Accepted values are 'pupitre' or 'chorist' or 'general'",
+        400
+      )
+    );
+  }
+  if (req.query.period) {
+    if (
+      req.query.period !== "day" &&
+      req.query.period !== "since" &&
+      req.query.period !== "period"
+    ) {
+      return next(
+        new ApiError(
+          "Invalid period value. Accepted values are 'day', 'since', or 'period'",
+          400
+        )
+      );
+    }
+  }
+
+  // Base aggregation pipeline
+  const basePipeline = [
+    {
+      $match: { event: "rep" },
+    },
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 },
+      },
+    },
+  ];
+
+  // Modify match and group stages based on genre
+  if (req.query.genre === "pupitre") {
+    basePipeline[1] = {
+      $group: {
+        _id: { pupitre: "$pupitre" },
+        count: { $sum: 1 },
+        presentRep: {
+          $sum: {
+            $cond: {
+              if: {
+                $and: [
+                  { $eq: ["$status", "present"] },
+                  { $eq: ["$event", "rep"] },
+                ],
+              },
+              then: 1,
+              else: 0,
+            },
+          },
+        },
+        absentRep: {
+          $sum: {
+            $cond: {
+              if: {
+                $and: [
+                  { $eq: ["$status", "absent"] },
+                  { $eq: ["$event", "rep"] },
+                ],
+              },
+              then: 1,
+              else: 0,
+            },
+          },
+        },
+      },
+    };
+    basePipeline.push({
+      $project: {
+        _id: 0,
+        pupitre: "$_id.pupitre",
+        count: "$count",
+        presentRep: "$presentRep",
+        absentRep: "$absentRep",
+      },
+    });
+  } else if (req.query.genre === "chorist") {
+    basePipeline[1] = {
+      $group: {
+        _id: { user_sender: "$user_sender" },
+        presentRep: {
+          $sum: {
+            $cond: {
+              if: {
+                $and: [
+                  { $eq: ["$status", "present"] },
+                  { $eq: ["$event", "rep"] },
+                ],
+              },
+              then: 1,
+              else: 0,
+            },
+          },
+        },
+        absentRep: {
+          $sum: {
+            $cond: {
+              if: {
+                $and: [
+                  { $eq: ["$status", "absent"] },
+                  { $eq: ["$event", "rep"] },
+                ],
+              },
+              then: 1,
+              else: 0,
+            },
+          },
+        },
+        count: { $sum: 1 },
+      },
+    };
+    basePipeline.push({
+      $lookup: {
+        from: "users",
+        localField: "_id.user_sender",
+        foreignField: "_id",
+        as: "userDetails",
+      },
+    });
+    // Add $unwind stage to destructure the user details array
+    basePipeline.push({
+      $unwind: "$userDetails",
+    });
+    // Add $project stage to reshape the output
+    basePipeline.push({
+      $project: {
+        _id: 0,
+        chorist: "$userDetails.firstName", // Replace with the actual field you want
+        count: "$count",
+        presentRep: "$presentRep",
+        absentRep: "$absentRep",
+      },
+    });
+  }
+
+  // Modify match stage based on period
+  if (req.query.period === "day") {
+    basePipeline[0].$match.date = new Date(req.query.startday);
+  } else if (req.query.period === "since") {
+    basePipeline[0].$match.date = { $gte: new Date(req.query.date) };
+  } else if (req.query.period === "period") {
+    basePipeline[0].$match.date = {
+      $gte: new Date(req.query.startdate),
+      $lte: new Date(req.query.enddate),
+    };
+  }
+
+  const stats = await Historic.aggregate(basePipeline);
+
+  res.status(200).json(stats);
+});

@@ -44,7 +44,7 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
                    you have rep
               </div>`,
   });
-
+  console.log(repetition.day);
   await Promise.all(
     finalList.map(async (user) => {
       await Historic.create({
