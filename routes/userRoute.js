@@ -26,7 +26,7 @@ const {
 
   eliminationStatus,
   updateTestitureVocale,
-
+  sendNotificationUrgente,
   confirmPresence,
 } = require("../services/userService");
 
@@ -61,6 +61,12 @@ router.post(
   authMiddleware.protect,
   authMiddleware.allowedTo("chorist"),
   confirmPresence
+);
+
+router.post(
+  "/notification/urgent",
+  authMiddleware.protect,
+  sendNotificationUrgente
 );
 
 router.put("/notification/:id", authMiddleware.protect, createNotificationRep);

@@ -15,6 +15,7 @@ const User = require("../models/userModel");
 const Concert = require("../models/concertModel");
 const Repetition = require("../models/repetitionModel");
 const Season = require("../models/seasonModel");
+const sendEmail = require("../utils/sendEmail");
 
 // Upload single image
 exports.uploadUserImage = uploadSingleImage("profileImg");
@@ -231,3 +232,26 @@ exports.eliminationStatus = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateTestitureVocale = factory.updateOne(User);
+
+// @desc    send notif urgent
+// @route   post /api/v1/users/notification/urgent/
+// @access  Private/chefpupitre
+exports.sendNotificationUrgente = asyncHandler(async (req, res, next) => {
+  const pupitre = req.user.group_pupitre;
+
+  const lisetUser = await User.find({
+    group_pupitre: pupitre,
+    role: "chorist",
+    active: true,
+    status_elimination: "none",
+  });
+  const emailList = lisetUser.map((chorist) => chorist.email);
+
+  sendEmail({
+    email: emailList,
+    subject: "urgent",
+    message: req.body.message,
+  });
+
+  res.send("hello");
+});
