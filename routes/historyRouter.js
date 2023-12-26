@@ -4,6 +4,7 @@ const {
   addPrsenceAutomatiqly,
   getStatistique,
   etatAbsentStat,
+  getAbsList,
 } = require("../services/historicService");
 const { protect, allowedTo } = require("../middlewares/authMiddleware");
 
@@ -18,5 +19,6 @@ router.get(
 router.get("/state-history", getStatistique);
 router.post("/add-present-auto", addPrsenceAutomatiqly);
 router.get("/stats-etat-rep", etatAbsentStat);
+router.get("/listabs", getAbsList);
 
 module.exports = router;
