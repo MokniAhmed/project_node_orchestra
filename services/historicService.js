@@ -3,6 +3,7 @@ const ApiError = require("../utils/apiError");
 const Historic = require("../models/historicModel");
 const Musical = require("../models/musicalModel");
 const Season = require("../models/seasonModel");
+const factory = require("./handlersFactory");
 
 // @desc    get hisotry d activite
 // @route   POST /api/v1/history/
@@ -456,3 +457,8 @@ exports.etatAbsentStat = asyncHandler(async (req, res, next) => {
 
   res.status(200).json(stats);
 });
+
+// @desc    Get list of Historic
+// @route   POST /api/v1/history/
+
+exports.getAbsList = factory.getAll(Historic);
