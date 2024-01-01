@@ -8,6 +8,8 @@ const {
   updateConcertById,
   checkDisponiblilte,
   getFinalList,
+  getPlacement,
+  confirmAllToConcert,
 } = require("../services/concertService");
 const {
   createConcertValidator,
@@ -25,4 +27,6 @@ router.put("/:id", updateConcertById);
 router.post("/confirm/:id", checkDisponiblilte);
 router.get("/final-list/:id", getFinalList);
 router.get("/get-qrcode/:id", getQrCode);
+router.get("/placement/:id", getPlacement);
+router.get("/confirm-all/:id", confirmAllToConcert);
 module.exports = router;
