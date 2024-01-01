@@ -130,3 +130,50 @@ exports.getFinalList = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({ results: concert.length, data: concert.list_final });
 });
+
+// test to add to the list final
+exports.confirmAllToConcert = asyncHandler(async (req, res, next) => {
+  const { id: concertId } = req.params;
+  const concert = await Concert.findById(concertId);
+
+  if (!concert) next(new ApiError("there's no concert with this ID", 400));
+  if (concert.list_candidate.length === 0)
+    next(new ApiError("we can't make final list with no candidates", 400));
+  concert.list_final = concert.list_candidate;
+  await concert.save();
+
+  res.status(200).json({ message: "added sucessfuly" });
+});
+// return placement
+exports.getPlacement = asyncHandler(async (req, res, next) => {
+  const { id: concertId } = req.params;
+  const list = await Concert.findById(concertId).select("list_final").populate({
+    path: "list_final",
+    select: "firstName lastName group_pupitre height gender",
+  });
+  if (!list) next(new ApiError("there's no list final ", 400));
+
+  const groupedArrays = list.list_final
+    .map((person) => ({
+      groupKey: person.group_pupitre,
+      personData: person,
+    }))
+    .reduce((groupedData, entry) => {
+      const { groupKey, personData } = entry;
+      groupedData[groupKey] = groupedData[groupKey] || [];
+      groupedData[groupKey].push(personData);
+      return groupedData;
+    }, {});
+  Object.keys(groupedArrays).forEach((groupKey) => {
+    groupedArrays[groupKey].sort((a, b) => {
+      if (a.gender === "male" && b.gender === "female") {
+        return 1;
+      }
+      if (a.gender === "female" && b.gender === "male") {
+        return -1;
+      }
+      return b.height - a.height;
+    });
+  });
+  res.status(200).json({ message: "done", resualt: groupedArrays });
+});
