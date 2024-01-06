@@ -7,3 +7,9 @@ exports.sendNotificationSocket = () => {
   const message = "Hello from the server!";
   socket.emit("sendNotification", { userId, message });
 };
+exports.sendNotificationSocketToPupitre = (pupitre, message) => {
+  socket.emit("sendNotificationpupitre", { pupitre, message });
+};
+exports.sendNotificationSocketToAdmin = (message) => {
+  socket.emit("sendNotificationAdmin", { message });
+};

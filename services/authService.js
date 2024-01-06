@@ -8,9 +8,11 @@ const sendEmail = require("../utils/sendEmail");
 const createToken = require("../utils/createToken");
 
 const User = require("../models/userModel");
-const { sendNotificationSocket } = require("../utils/sendNotifSocket");
-
-
+const {
+  sendNotificationSocket,
+  sendNotificationSocketToPupitre,
+  sendNotificationSocketToAdmin,
+} = require("../utils/sendNotifSocket");
 
 // @desc    Login
 // @route   GET /api/v1/auth/login
@@ -18,7 +20,9 @@ const { sendNotificationSocket } = require("../utils/sendNotifSocket");
 exports.login = asyncHandler(async (req, res, next) => {
   // 1) check if password and email in the body (validation)
   // 2) check if user exist & check if password is correct
-  sendNotificationSocket();
+  // sendNotificationSocket();
+  // sendNotificationSocketToPupitre("second", "hello");
+  sendNotificationSocketToAdmin("hello admin");
   const user = await User.findOne({ email: req.body.email });
 
   if (!user || !(await bcrypt.compare(req.body.password, user.password))) {
