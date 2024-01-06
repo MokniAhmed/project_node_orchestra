@@ -15,9 +15,14 @@ io.on("connection", (socket) => {
   console.log("Client connected");
 
   // Handle client registration
-  socket.on("register", (userId) => {
-    connectedClients[userId] = socket.id;
-    console.log(`Client ${userId} registered`);
+  socket.on("register", (data) => {
+    console.log("Client connected", data.login);
+
+    connectedClients[data.login] = socket.id;
+    if (data.role === "admin") socket.join("Admin");
+    if (data.role === "chorist") {
+      socket.join(data.pupitre);
+    }
   });
 
   // Handle sending notifications
@@ -32,7 +37,15 @@ io.on("connection", (socket) => {
       console.log(`Client ${userId} not found`);
     }
   });
+  socket.on("sendNotificationpupitre", (data) => {
+    io.to(data.pupitre).emit("notification", { message: data.message });
+  });
+  socket.on("sendNotificationAdmin", (data) => {
+    io.to("Admin").emit("notification", { message: data.message });
+  });
+   
 });
+
 
 const PORT = 5000;
 server.listen(PORT, () => {
