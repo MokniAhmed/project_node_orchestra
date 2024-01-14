@@ -56,7 +56,39 @@ exports.protect = asyncHandler(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+// @desc make socket authenticated
+exports.protectSocket = asyncHandler(async (socket, next) => {
+  try {
+    // 1. Extract token from headers
+    const authHeader = socket.handshake.headers.authorization;
+    const token =
+      authHeader && authHeader.startsWith("Bearer") && authHeader.split(" ")[1];
+    console.log("here");
+    if (!token) {
+      next(new ApiError("Unauthorized", 401)); // Handle missing token
+    }
 
+    // 2. Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    // 3. Check user existence
+    const currentUser = await User.findById(decoded.userId).select(
+      "role group_pupitre"
+    );
+
+    if (!currentUser) {
+      throw new ApiError("Invalid user for token", 401);
+    }
+
+    // 4. Attach user to socket
+    socket.user = currentUser;
+
+    // 5. Call next middleware
+    next(); // Uncomment to allow subsequent middleware execution
+  } catch (error) {
+    next(error);
+  }
+});
 // @desc    Authorization (User Permissions)
 // ["admin", "manager"]
 exports.allowedTo = (...roles) =>

@@ -22,7 +22,7 @@ exports.login = asyncHandler(async (req, res, next) => {
   // 2) check if user exist & check if password is correct
   // sendNotificationSocket();
   // sendNotificationSocketToPupitre("second", "hello");
-  sendNotificationSocketToAdmin("hello admin");
+  // sendNotificationSocketToAdmin("hello admin");
   const user = await User.findOne({ email: req.body.email });
 
   if (!user || !(await bcrypt.compare(req.body.password, user.password))) {
