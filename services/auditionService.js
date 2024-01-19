@@ -48,11 +48,7 @@ exports.getPlanningByAuditId = asyncHandler(async (req, res, next) => {
   if (!audition) {
     return next(new ApiError("Audition not found", 404));
   }
-  sendNotificationSocketToPupitre("first", {
-    message: "message to second pupitre ",
-    data: "we cancele repetition",
-  });
-  //sendNotificationSocketToChorist("657c423e99cf596cbfcbe363", "single message");
+
 
   // The 'planning' array is already populated
   res.status(200).json({ data: audition.planning });

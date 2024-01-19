@@ -1,4 +1,5 @@
 const Candidate = require("../models/candidateModel");
+const { sendNotificationSocketToAdmin } = require("../socket");
 const sendEmail = require("./sendEmail");
 
 exports.startJob = async (startTime, endTime, interval, job) => {
@@ -22,15 +23,7 @@ exports.startJob = async (startTime, endTime, interval, job) => {
         createdAt: { $gte: oneMinuteAgo },
       });
       if (candidates.length > 0)
-        sendEmail({
-          email: "haythemmouna@gmail.com",
-          subject: "notifer admin",
-          message: "Number of new candidates created ",
-          html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
-            <h1 style="width: 100%;color: white; background-color:rgb(0, 229, 255);text-align: center ; padding: 10px 0px">ORCHESTRE</h1>
-            <div>Number of new candidates created: ${candidates.length} </div>
-        </div>`,
-        });
+        sendNotificationSocketToAdmin(`${candidates.length}new condidate`);
       console.log(`Number of new candidates created: ${candidates.length}`);
     } catch (error) {
       console.error("Error retrieving candidates:", error);
