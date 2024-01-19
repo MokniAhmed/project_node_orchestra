@@ -16,6 +16,7 @@ const Concert = require("../models/concertModel");
 const Repetition = require("../models/repetitionModel");
 const Season = require("../models/seasonModel");
 const sendEmail = require("../utils/sendEmail");
+const { sendNotificationSocketToPupitre } = require("../socket");
 
 // Upload single image
 exports.uploadUserImage = uploadSingleImage("profileImg");
@@ -254,6 +255,7 @@ exports.sendNotificationUrgente = asyncHandler(async (req, res, next) => {
     subject: "urgent",
     message: req.body.message,
   });
+  sendNotificationSocketToPupitre(pupitre, req.body.message);
 
   res.send("hello");
 });

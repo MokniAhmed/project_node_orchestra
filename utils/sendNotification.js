@@ -1,6 +1,7 @@
 /* eslint-disable no-plusplus */
 const schedule = require("node-schedule");
 const sendEmail = require("./sendEmail");
+const { sendNotificationSocketToChorist } = require("../socket");
 
 exports.sendNotification = async (options) => {
   schedule.scheduleJob(new Date(options.dateNotif), async () => {
@@ -9,6 +10,10 @@ exports.sendNotification = async (options) => {
       subject: options.subject,
       message: options.message,
       html: options.tamplate,
+    });
+    // eslint-disable-next-line array-callback-return
+    options.users.map((email) => {
+      sendNotificationSocketToChorist(email, options.message);
     });
   });
 };
@@ -53,7 +58,7 @@ exports.sendMultipleNotification = async (options) => {
   // Calculer la différence en millisecondes entre les deux dates
   const rangeTimes = endDate - startDate;
 
-  schedule.scheduleJob(new Date("2023-12-08T15:11:00"), async () => {
+  schedule.scheduleJob(new Date(options.dateNotif), async () => {
     console.log("hello2");
     // await sendEmail({
     //   email: options.users,
@@ -77,12 +82,15 @@ exports.sendMultipleNotification = async (options) => {
           console.log("hello");
         }
 
-        // await sendEmail({
-        //   email: options.users,
-        //   subject: options.subject,
-        //   message: options.message,
-        //   html: options.tamplate,
-        // });
+        await sendEmail({
+          email: options.users,
+          subject: options.subject,
+          message: options.message,
+          html: options.tamplate,
+        });
+        // eslint-disable-next-line array-callback-return
+
+        sendNotificationSocketToChorist(options.users, options.message);
       }
     );
   });

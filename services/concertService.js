@@ -86,19 +86,6 @@ exports.checkDisponiblilte = asyncHandler(async (req, res, next) => {
   const confirmUrl = `localhost:8000/api/v1/users/confirm-concert/${concertId}`;
   const declineUrl = `localhost:8000/api/v1/users/decline-concert/${concertId}`;
 
-  /*   sendEmail({
-    email: emailList,
-    subject: "notifer admin",
-    message: "Number of new candidates created ",
-    html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
-      <h1 style="width: 100%;color: white; background-color:rgb(0, 229, 255);text-align: center ; padding: 10px 0px">ORCHESTRE</h1>
-      <div>we have ${name} in ${location} ${date}  we need your confiratiom  
-      if yes :${confirmUrl} or
-      
-      no
-      </div>
-  </div>`,
-  }); */
   res
     .status(200)
     .json({ status: "sucess", message: " checking mail has been sent. " });

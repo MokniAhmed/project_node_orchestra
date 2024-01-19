@@ -4,6 +4,7 @@ const Historic = require("../models/historicModel");
 const Musical = require("../models/musicalModel");
 const Season = require("../models/seasonModel");
 const factory = require("./handlersFactory");
+const User = require("../models/userModel");
 
 // @desc    get hisotry d activite
 // @route   POST /api/v1/history/
@@ -462,3 +463,39 @@ exports.etatAbsentStat = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/history/
 
 exports.getAbsList = factory.getAll(Historic);
+
+// @desc    nomination choriste
+// @route   POST /api/v1/history/
+// @access  private/chorist
+exports.nominatedorabsentchoriste = asyncHandler(async (req, res, next) => {
+  // find user by id
+  const user = await User.findById(req.params.id);
+  const nbAbs = user.nb_absence;
+  if (!user) {
+    return next(new ApiError(`No user for this id ${req.params.id}`, 404));
+  }
+  // find current active season
+  const ActiveSeason = await Season.findOne({ state_season: "new" });
+
+  // get max absence per season
+  const maxAbs = ActiveSeason.max_absence;
+  const nominamtions = ActiveSeason.nomination;
+
+  //change elimination status
+  if (nbAbs > nominamtions && nbAbs < maxAbs) {
+    ActiveSeason.nominatedMembers.push({
+      memberId: user._id,
+      nom: user.nom,
+    });
+  } else if (nbAbs > maxAbs) {
+    ActiveSeason.absentMembers.push({
+      memberId: user._id,
+      nom: user.firstName,
+    });
+  }
+  console.log(user.status_elimination);
+
+  await ActiveSeason.save();
+
+  res.status(204).json({ message: "success" });
+});
