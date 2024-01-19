@@ -106,6 +106,7 @@ exports.createNewCandidate = asyncHandler(async (req, res, next) => {
     candidate: newCondidate._id,
   };
   planning.push(candidatePlan);
+  //send mail
   audit.planning = planning;
   await audit.save();
 

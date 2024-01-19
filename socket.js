@@ -12,7 +12,7 @@ const io = new Server({
 io.use(protectSocket);
 
 io.on("connection", (socket) => {
-  const { _id, role, list_muted, group_pupitre } = socket.user;
+  const { _id, role, list_muted, group_pupitre, email } = socket.user;
 
   const currentDay = new Date().toLocaleDateString();
 
@@ -24,7 +24,7 @@ io.on("connection", (socket) => {
   if (role === "admin") {
     socket.join("admin");
   } else {
-    const userRoom = `userRoom_${_id}`;
+    const userRoom = `userRoom_${email}`;
     socket.join(userRoom);
     socket.join(group_pupitre);
   }
@@ -46,10 +46,10 @@ io.on("connection", (socket) => {
   });
 });
 
-const sendNotificationSocketToChorist = (userId, message) => {
+const sendNotificationSocketToChorist = (email, message) => {
   //  console.log("second");
   //console.log(io.sockets.sockets);
-  io.to(`userRoom_${userId}`).emit("notification", message);
+  io.to(`userRoom_${email}`).emit("notification", message);
 };
 const sendNotificationSocketToPupitre = (pupitre, message) => {
   io.to(pupitre).emit("notification", message);

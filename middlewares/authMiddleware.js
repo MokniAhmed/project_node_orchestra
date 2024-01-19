@@ -73,7 +73,7 @@ exports.protectSocket = asyncHandler(async (socket, next) => {
 
     // 3. Check user existence
     const currentUser = await User.findById(decoded.userId).select(
-      "role group_pupitre list_muted"
+      "role group_pupitre list_muted email"
     );
 
     if (!currentUser) {

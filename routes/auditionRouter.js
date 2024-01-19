@@ -18,7 +18,7 @@ router.post("/:seasonId", createAudition);
  *       - Audition
  *     responses:
  *       200:
- *         description: Successful response
+ *         $ref: '#/components/responses/200'
  */
 router.get("/", AllAudition);
 router.get("/:id", getPlanningByAuditId);
