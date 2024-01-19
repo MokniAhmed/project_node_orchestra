@@ -5,6 +5,7 @@ const ApiError = require("../utils/apiError");
 
 const Break = require("../models/breaksModel");
 const User = require("../models/userModel");
+const { sendNotificationSocketToAdmin } = require("../socket");
 
 // @desc    Create Break
 // @route   POST  /api/v1/breaks
@@ -12,6 +13,7 @@ const User = require("../models/userModel");
 exports.createBreak = asyncHandler(async (req, res, next) => {
   req.body.user_sender = req.user._id;
   const breakUser = await Break.create({ ...req.body });
+  sendNotificationSocketToAdmin(`demande break to user${req.user._id}`);
   res.status(200).json({ data: breakUser });
 });
 
