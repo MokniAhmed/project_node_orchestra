@@ -2,48 +2,65 @@ const { Server } = require("socket.io");
 
 const { protectSocket } = require("./middlewares/authMiddleware");
 
-function initializeWebSocket(server) {
-  const io = new Server(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-    },
+const io = new Server({
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.use(protectSocket);
+
+io.on("connection", (socket) => {
+  const { _id, role, list_muted, group_pupitre } = socket.user;
+
+  const currentDay = new Date().toLocaleDateString();
+
+  if (list_muted.includes(currentDay)) {
+    console.log(`User ${_id} is muted for notifications today.`);
+    return;
+  }
+
+  if (role === "admin") {
+    socket.join("admin");
+  } else {
+    const userRoom = `userRoom_${_id}`;
+    socket.join(userRoom);
+    socket.join(group_pupitre);
+  }
+  //console.log(socket);
+  // Handle sending notifications
+  socket.on("sendNotification", (data) => {
+    console.log("here");
+    const { userId, message } = data;
+    io.to(`userRoom_${userId}`).emit("notification", { message });
+    console.log(`Notification sent to ${userId}`);
   });
 
-  const connectedClients = {};
-  io.use(protectSocket);
-  io.on("connection", (socket, user) => {
-    console.log("Client connected");
-
-    // Handle client registration
-    /*socket.on("register", (data) => {
-      console.log("Client connected", data.login);
-  
-      connectedClients[data.login] = socket.id;
-      if (data.role === "admin") socket.join("Admin");
-      if (data.role === "chorist") {
-        socket.join(data.pupitre);
-      }
-    });*/
-
-    // Handle sending notifications
-    socket.on("sendNotification", (data) => {
-      const { userId, message } = data;
-      const clientSocketId = connectedClients[userId];
-
-      if (clientSocketId) {
-        io.to(clientSocketId).emit("notification", { message });
-        console.log(`Notification sent to ${userId}`);
-      } else {
-        console.log(`Client ${userId} not found`);
-      }
-    });
-    socket.on("sendNotificationpupitre", (data) => {
-      io.to(data.pupitre).emit("notification", { message: data.message });
-    });
-    socket.on("sendNotificationAdmin", (data) => {
-      io.to("Admin").emit("notification", { message: data.message });
-    });
+  socket.on("sendNotificationpupitre", (group, message) => {
+    io.to(group).emit("notification", { message: message });
   });
-}
-module.exports = initializeWebSocket;
+
+  socket.on("sendNotificationAdmin", (message) => {
+    io.to("admin").emit("notification", { message: message });
+  });
+});
+
+const sendNotificationSocketToChorist = (userId, message) => {
+  //  console.log("second");
+  //console.log(io.sockets.sockets);
+  io.to(`userRoom_${userId}`).emit("notification", message);
+};
+const sendNotificationSocketToPupitre = (pupitre, message) => {
+  io.to(pupitre).emit("notification", message);
+};
+const sendNotificationSocketToAdmin = (message) => {
+  io.to("admin").emit("notification", message);
+};
+
+module.exports = {
+  io,
+  sendNotificationSocketToAdmin,
+  sendNotificationSocketToChorist,
+  sendNotificationSocketToPupitre,
+};

@@ -14,7 +14,8 @@ const dbConnection = require("./config/database");
 // Routes
 const mountRoutes = require("./routes");
 
-const initializeWebSocket = require("./socket");
+const { initSwagger } = require("./swagger");
+const { io } = require("./socket");
 
 // Connect with db
 dbConnection();
@@ -51,7 +52,7 @@ app.use("/api", limiter);
 
 // Mount Routes
 mountRoutes(app);
-
+initSwagger(app);
 app.all("*", (req, res, next) => {
   next(new ApiError(`Can't find this route: ${req.originalUrl}`, 400));
 });
@@ -59,8 +60,10 @@ app.all("*", (req, res, next) => {
 // Global error handling middleware for express
 app.use(globalError);
 const server = http.createServer(app);
-initializeWebSocket(server);
 const PORT = process.env.PORT || 8000;
+
+io.listen(5000);
+
 server.listen(PORT, () => {
   console.log(`App running running on port ${PORT}`);
 });
@@ -73,4 +76,3 @@ process.on("unhandledRejection", (err) => {
     process.exit(1);
   });
 });
-module.exports = server;

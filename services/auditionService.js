@@ -5,6 +5,10 @@ const { startJob } = require("../utils/startJob");
 const Audition = require("../models/auditionModel");
 const factory = require("./handlersFactory");
 const ApiError = require("../utils/apiError");
+const {
+  sendNotificationSocketToChorist,
+  sendNotificationSocketToPupitre,
+} = require("../socket");
 
 exports.createAudition = asyncHandler(async (req, res, next) => {
   const audit = { ...req.body, season: req.params.seasonId };
@@ -31,6 +35,7 @@ exports.createAudition = asyncHandler(async (req, res, next) => {
 });
 
 exports.AllAudition = factory.getAll(Audition);
+
 exports.getPlanningByAuditId = asyncHandler(async (req, res, next) => {
   const audition = await Audition.findById(req.params.id)
     .select("planning") // Select the entire planning array
@@ -43,6 +48,11 @@ exports.getPlanningByAuditId = asyncHandler(async (req, res, next) => {
   if (!audition) {
     return next(new ApiError("Audition not found", 404));
   }
+  sendNotificationSocketToPupitre("first", {
+    message: "message to second pupitre ",
+    data: "we cancele repetition",
+  });
+  //sendNotificationSocketToChorist("657c423e99cf596cbfcbe363", "single message");
 
   // The 'planning' array is already populated
   res.status(200).json({ data: audition.planning });

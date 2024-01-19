@@ -8,11 +8,35 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
 router
   .route("/")
+  /**
+   * @swagger
+   * /api/v1/break:
+   *   post:
+   *     summary: Get all Audition
+   *     description: Retrieve a list of all Audition.
+   *     tags:
+   *       - Breaks
+   *     responses:
+   *       200:
+   *         description: Successful response
+   */
   .post(
     breakValidator.createBreakValidator,
     authMiddleware.protect,
     breakService.createBreak
   )
+  /**
+   * @swagger
+   * /api/v1/break:
+   *   get:
+   *     summary: Get all Audition
+   *     description: Retrieve a list of all Audition.
+   *     tags:
+   *       - Breaks
+   *     responses:
+   *       200:
+   *         description: Successful response
+   */
   .get(breakService.getBreaks);
 
 router

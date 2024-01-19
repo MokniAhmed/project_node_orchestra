@@ -63,7 +63,7 @@ exports.protectSocket = asyncHandler(async (socket, next) => {
     const authHeader = socket.handshake.headers.authorization;
     const token =
       authHeader && authHeader.startsWith("Bearer") && authHeader.split(" ")[1];
-    console.log("here");
+
     if (!token) {
       next(new ApiError("Unauthorized", 401)); // Handle missing token
     }
@@ -73,7 +73,7 @@ exports.protectSocket = asyncHandler(async (socket, next) => {
 
     // 3. Check user existence
     const currentUser = await User.findById(decoded.userId).select(
-      "role group_pupitre"
+      "role group_pupitre list_muted"
     );
 
     if (!currentUser) {
