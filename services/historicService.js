@@ -471,7 +471,9 @@ exports.nominatedorabsentchoriste = asyncHandler(async (req, res, next) => {
   // find user by id
   const user = await User.findById(req.params.id);
   const nbAbs = user.nb_absence;
-
+  if (!user) {
+    return next(new ApiError(`No user for this id ${req.params.id}`, 404));
+  }
   // find current active season
   const ActiveSeason = await Season.findOne({ state_season: "new" });
 
@@ -493,9 +495,6 @@ exports.nominatedorabsentchoriste = asyncHandler(async (req, res, next) => {
   }
   console.log(user.status_elimination);
 
-  if (!user) {
-    return next(new ApiError(`No user for this id ${req.params.id}`, 404));
-  }
   await ActiveSeason.save();
 
   res.status(204).json({ message: "success" });

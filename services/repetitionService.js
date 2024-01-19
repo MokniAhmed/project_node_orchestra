@@ -1,4 +1,5 @@
 const QRCode = require("qrcode");
+const Season = require("../models/seasonModel");
 
 const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
@@ -10,6 +11,8 @@ const Historic = require("../models/historicModel");
 const { sendNotification } = require("../utils/sendNotification");
 const getRandomUsersBygroup = require("../utils/randomUserByGroup");
 const Concert = require("../models/concertModel");
+const schedule = require("node-schedule");
+const sendEmail = require("../utils/sendEmail");
 
 // test
 exports.createRepetition = asyncHandler(async (req, res, next) => {
@@ -59,7 +62,65 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
       });
     })
   );
+  await schedule.scheduleJob(new Date(req.body.end_rep), async () => {
+    console.log(repetition.end_rep);
 
+    const activeSeason = await Season.findById(concert.season);
+    const maxAbs = activeSeason.max_absence;
+    const nominamtions = activeSeason.nomination;
+    console.log(activeSeason);
+    const listHis = await Historic.find({
+      event: "rep",
+      rep: repetition._id,
+      status: "absent",
+    });
+    const listUserNomination = [];
+    const listUserAbcent = [];
+    await Promise.all(
+      listHis.map(async (his) => {
+        const user = await User.findById(his.user_sender);
+        user.nb_absence += 1;
+        //change elimination status
+        if (user.nb_absence > nominamtions && user.nb_absence < maxAbs) {
+          activeSeason.nominatedMembers.push({
+            memberId: user._id,
+            nom: user.nom,
+          });
+          listUserNomination.push(user.email);
+        } else if (user.nb_absence > maxAbs) {
+          activeSeason.absentMembers.push({
+            memberId: user._id,
+            nom: user.firstName,
+          });
+          listUserAbcent.push(user.email);
+
+          user.status_elimination = "absence";
+        }
+        console.log("hello1");
+        await user.save();
+      })
+    );
+    console.log("hello2");
+    if (listUserNomination.length !== 0) {
+      await sendEmail({
+        email: listUserNomination,
+        subject: "Nomination",
+        message: "user.message",
+        html: "user.tamplate",
+      });
+    }
+    if (listUserAbcent.length !== 0) {
+      await sendEmail({
+        email: listUserAbcent,
+        subject: "abcent",
+        message: "user.message",
+        html: "user.tamplate",
+      });
+    }
+    console.log("hello3");
+    const seasonn = await activeSeason.save();
+    console.log(seasonn);
+  });
   res.status(200).json({ data: repetition });
 });
 
