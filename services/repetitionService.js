@@ -1,7 +1,8 @@
 const QRCode = require("qrcode");
+const schedule = require("node-schedule");
+const asyncHandler = require("express-async-handler");
 const Season = require("../models/seasonModel");
 
-const asyncHandler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const factory = require("./handlersFactory");
 
@@ -11,7 +12,6 @@ const Historic = require("../models/historicModel");
 const { sendNotification } = require("../utils/sendNotification");
 const getRandomUsersBygroup = require("../utils/randomUserByGroup");
 const Concert = require("../models/concertModel");
-const schedule = require("node-schedule");
 const sendEmail = require("../utils/sendEmail");
 
 // test
@@ -47,7 +47,6 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
                    you have rep
               </div>`,
   });
-  console.log(repetition.day);
   await Promise.all(
     finalList.map(async (user) => {
       await Historic.create({
@@ -96,11 +95,11 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
 
           user.status_elimination = "absence";
         }
-        console.log("hello1");
+
         await user.save();
       })
     );
-    console.log("hello2");
+
     if (listUserNomination.length !== 0) {
       await sendEmail({
         email: listUserNomination,
@@ -117,7 +116,7 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
         html: "user.tamplate",
       });
     }
-    console.log("hello3");
+
     const seasonn = await activeSeason.save();
     console.log(seasonn);
   });
