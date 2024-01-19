@@ -18,6 +18,13 @@ exports.initSwagger = (app) => {
       ],
       components: {
         responses: {
+          201: {
+            description: "created with sucess",
+          },
+          204: {
+            description: "No content",
+          },
+
           200: {
             description: "Success",
           },
