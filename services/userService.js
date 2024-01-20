@@ -16,6 +16,7 @@ const Concert = require("../models/concertModel");
 const Repetition = require("../models/repetitionModel");
 const Season = require("../models/seasonModel");
 const sendEmail = require("../utils/sendEmail");
+const { sendNotificationSocketToPupitre } = require("../socket");
 
 // Upload single image
 exports.uploadUserImage = uploadSingleImage("profileImg");
@@ -193,6 +194,8 @@ exports.confirmPresence = asyncHandler(async (req, res, next) => {
   const { list_final: listFinal, list_candidate: candidateList } = concert;
   if (!candidateList.includes(req.user._id))
     next(new ApiError("your not invited ", 403));
+  if (!listFinal.includes(req.user._id))
+    next(new ApiError("you confirm already  ", 403));
   listFinal.push(req.user._id);
   concert.list_final = listFinal;
   await concert.save();
@@ -252,6 +255,7 @@ exports.sendNotificationUrgente = asyncHandler(async (req, res, next) => {
     subject: "urgent",
     message: req.body.message,
   });
+  sendNotificationSocketToPupitre(pupitre, req.body.message);
 
   res.send("hello");
 });

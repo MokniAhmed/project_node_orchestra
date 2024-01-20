@@ -44,7 +44,41 @@ router
   .put(breakValidator.updateBreakValidator, breakService.updateInfoBreakById)
   .get(breakService.getBreakById)
   .delete(breakValidator.deleteBreakValidator, breakService.deleteBreakById);
-
+/**
+ * @swagger
+ * /api/v1/break/status/{id}:
+ *   put:
+ *     summary: Update Break Status by ID
+ *     description: Update the status of a break by its ID.
+ *     tags:
+ *       - Breaks
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the break
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 description: The new status of the break
+ *                 enum:
+ *                   - "pending"
+ *                   - "approved"
+ *                   - "rejected"
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *     security:
+ *       - bearerAuth: []
+ */
 router.put(
   "/status/:id",
   authMiddleware.protect,
