@@ -6,6 +6,7 @@ const {
   etatAbsentStat,
   getAbsList,
   nominatedorabsentchoriste,
+  profilDetail,
 } = require("../services/historicService");
 const { protect, allowedTo } = require("../middlewares/authMiddleware");
 
@@ -22,5 +23,6 @@ router.post("/add-present-auto", addPrsenceAutomatiqly);
 router.get("/stats-etat-rep", etatAbsentStat);
 router.get("/listabs", getAbsList);
 router.post("/nomination/:id", nominatedorabsentchoriste);
+router.post("/profil/:id", profilDetail);
 
 module.exports = router;
