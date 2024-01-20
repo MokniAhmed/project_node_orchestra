@@ -10,7 +10,7 @@ const seasonSchema = new mongoose.Schema(
     },
     endSeason: { type: Date, required: [true, "must provide a ending date "] },
     state_season: { type: String, enum: ["archived", "new"], default: "new" },
-    nomination: { type: String, default: 8 },
+    nomination: { type: Number, default: 8 },
     nominatedMembers: [
       {
         memberId: mongoose.Types.ObjectId,
