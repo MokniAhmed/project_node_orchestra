@@ -14,10 +14,12 @@ exports.getHistoryByUser = asyncHandler(async (req, res, next) => {
   const musicName = req.query.music || undefined;
 
   // Define the base query without season conditions
+
   const baseQuery = {
     user_sender: req.params.id,
     status: "present",
   };
+  console.log(baseQuery);
   // Add season conditions based on the provided seasonState
   if (seasonState) {
     if (seasonState === "new") {

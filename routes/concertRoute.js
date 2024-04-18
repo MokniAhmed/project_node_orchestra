@@ -10,6 +10,7 @@ const {
   getFinalList,
   getPlacement,
   confirmAllToConcert,
+  getConcertByIdAll,
 } = require("../services/concertService");
 const {
   createConcertValidator,
@@ -125,6 +126,8 @@ router.get("/", getAllConcerts);
  *         $ref: '#/components/responses/404'
  */
 router.get("/:id", getConcertById);
+
+router.get("/detailed/:id", getConcertByIdAll);
 /**
  * @swagger
  * /api/v1/concert/{id}:

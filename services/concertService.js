@@ -39,6 +39,9 @@ exports.getAllConcerts = factory.getAll(Concert);
 // @access  public/user
 exports.getConcertById = factory.getOne(Concert);
 
+// get concert by id and get all the music populate
+exports.getConcertByIdAll = factory.getOne(Concert, "music");
+
 // @desc    DELETE  Concert by id
 // @route   DELETE /api/v1/concert/
 // @access  public/user
