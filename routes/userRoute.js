@@ -37,6 +37,7 @@ const router = express.Router();
 // router.use(authMiddleware.protect);
 
 router.get("/getMe", getLoggedUserData, getUser);
+router.post("/", createUser);
 router.put("/changeMyPassword", updateLoggedUserPassword);
 router.put("/updateMe", updateLoggedUserData);
 router.delete("/deleteMe", deleteLoggedUserData);

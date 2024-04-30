@@ -112,7 +112,7 @@ exports.createRepetition = asyncHandler(async (req, res, next) => {
       await sendEmail({
         email: listUserAbcent,
         subject: "abcent",
-        message: "user.message",
+        message: "elemine",
         html: "user.tamplate",
       });
     }
