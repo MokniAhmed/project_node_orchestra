@@ -3,6 +3,7 @@ const {
   createAudition,
   AllAudition,
   getPlanningByAuditId,
+  deleteauditionId,
 } = require("../services/auditionService");
 
 const router = express.Router();
@@ -100,4 +101,6 @@ router.get("/", AllAudition);
  *                   _id: "656cc2911fcbeea90f47dca5"
  */
 router.get("/:id", getPlanningByAuditId);
+router.delete("/:id", deleteauditionId);
+
 module.exports = router;
