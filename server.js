@@ -48,7 +48,7 @@ const limiter = rateLimit({
 });
 
 // Apply the rate limiting middleware to all requests
-app.use("/api", limiter);
+//app.use("/api", limiter);
 
 // Mount Routes
 mountRoutes(app);

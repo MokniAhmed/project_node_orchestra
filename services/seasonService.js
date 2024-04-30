@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 
 const Season = require("../models/seasonModel");
+const Concert = require("../models/concertModel");
 
 // @desc    Create new season & desable last season
 // @route   POST /api/v1/season/
@@ -16,4 +17,15 @@ exports.CreateSeason = asyncHandler(async (req, res, next) => {
     ...req.body,
   });
   res.status(200).json({ newSeason });
+});
+
+// @desc    Create new season & desable last season
+// @route   POST /api/v1/season/
+// @access  public/admin
+exports.getseason = asyncHandler(async (req, res, next) => {
+  // 1- find last season
+  const season = await Season.findOne({ state_season: "new" }).limit(1);
+  const concert = await Concert.find({ season: season._id });
+  console.log(season._id);
+  res.status(200).json({ name: season.name, concert: concert });
 });

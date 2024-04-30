@@ -50,5 +50,5 @@ const router = express.Router();
  *         $ref: '#/components/responses/404'
  */
 router.post("/", createNewSeasonValidator, seasonService.CreateSeason);
-
+router.get("/getseason", seasonService.getseason);
 module.exports = router;

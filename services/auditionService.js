@@ -10,6 +10,8 @@ const {
   sendNotificationSocketToPupitre,
 } = require("../socket");
 
+exports.deleteauditionId = factory.deleteOne(Audition);
+
 exports.createAudition = asyncHandler(async (req, res, next) => {
   const audit = { ...req.body, season: req.params.seasonId };
   const newAudit = await Audition.create(audit);
@@ -48,7 +50,6 @@ exports.getPlanningByAuditId = asyncHandler(async (req, res, next) => {
   if (!audition) {
     return next(new ApiError("Audition not found", 404));
   }
-
 
   // The 'planning' array is already populated
   res.status(200).json({ data: audition.planning });
