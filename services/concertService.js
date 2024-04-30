@@ -13,16 +13,16 @@ const ApiError = require("../utils/apiError");
 // @access  public/user
 exports.createConcert = asyncHandler(async (req, res, next) => {
   // 1- get data from request
-  // const concert = { ...req.body };
+  const concert = { ...req.body };
   // 1- get data from Excel
 
-  /* const listmusic = converExcelToJson(req.body.path_Excel);
+  const listmusic = converExcelToJson(req.body.path_Excel);
   await Promise.all(
     listmusic.map(async (music) => {
       const newMusic = await Musical.create(music);
       concert.music.push(newMusic._id);
     })
-  );*/
+  );
   // 2- save
   const newConcert = await Concert.create(req.body);
 

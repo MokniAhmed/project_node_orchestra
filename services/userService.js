@@ -16,7 +16,10 @@ const Concert = require("../models/concertModel");
 const Repetition = require("../models/repetitionModel");
 const Season = require("../models/seasonModel");
 const sendEmail = require("../utils/sendEmail");
-const { sendNotificationSocketToPupitre } = require("../socket");
+const {
+  sendNotificationSocketToPupitre,
+  sendNotificationSocketToChorist,
+} = require("../socket");
 
 // Upload single image
 exports.uploadUserImage = uploadSingleImage("profileImg");
@@ -234,7 +237,13 @@ exports.eliminationStatus = asyncHandler(async (req, res, next) => {
   res.status(204).json({ message: "success" });
 });
 
-exports.updateTestitureVocale = factory.updateOne(User);
+exports.updateTestitureVocale = asyncHandler(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(req.params.id, {
+    tessiture_vocale: req.body.tessiture_vocale,
+  });
+  sendNotificationSocketToChorist(user.email, "new tessiture_vocale h");
+  res.status(200).json({ user });
+});
 
 // @desc    send notif urgent
 // @route   post /api/v1/users/notification/urgent/

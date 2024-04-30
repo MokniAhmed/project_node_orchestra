@@ -513,7 +513,7 @@ exports.profilDetail = asyncHandler(async (req, res, next) => {
     date: new Date(),
   };
 
-  if (history == 1) {
+  if (history === 1) {
     newStatus.statuts = "junior";
   } else if (history > 1 && history < 3) {
     newStatus.statuts = "choriste junior";

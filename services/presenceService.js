@@ -41,8 +41,8 @@ exports.markPrsence = asyncHandler(async (req, res, next) => {
       { new: true }
     );
   }
-  if (!historic) next(new ApiError("no historic with this data enter.", 400));
-  res.status(200).json({ data: historic });
+  // if (!historic) next(new ApiError("no historic with this data enter.", 400));
+  res.status(200).json({ message: "user mark present" });
 });
 
 // @desc    add presence to the repetition & concert
