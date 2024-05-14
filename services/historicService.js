@@ -501,3 +501,31 @@ exports.nominatedorabsentchoriste = asyncHandler(async (req, res, next) => {
 
   res.status(204).json({ message: "success" });
 });
+
+exports.profilDetail = asyncHandler(async (req, res, next) => {
+  const history = await Historic.countDocuments({
+    user_sender: req.params.id,
+    status: "present",
+  });
+
+  const user = await User.findById(req.params.id);
+
+  const newStatus = {
+    statuts: "",
+    date: new Date(),
+  };
+
+  if (history === 1) {
+    newStatus.statuts = "junior";
+  } else if (history > 1 && history < 3) {
+    newStatus.statuts = "choriste junior";
+  } else {
+    newStatus.statuts = "senior";
+  }
+
+  user.status.push(newStatus);
+
+  await user.save();
+
+  res.status(204).json({ message: "success" });
+});

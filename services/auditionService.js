@@ -10,6 +10,8 @@ const {
   sendNotificationSocketToPupitre,
 } = require("../socket");
 
+exports.deleteauditionId = factory.deleteOne(Audition);
+
 exports.createAudition = asyncHandler(async (req, res, next) => {
   const audit = { ...req.body, season: req.params.seasonId };
   const newAudit = await Audition.create(audit);

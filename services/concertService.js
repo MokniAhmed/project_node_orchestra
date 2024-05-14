@@ -13,19 +13,41 @@ const ApiError = require("../utils/apiError");
 // @access  public/user
 exports.createConcert = asyncHandler(async (req, res, next) => {
   // 1- get data from request
-  // const concert = { ...req.body };
+  const concert = { ...req.body };
   // 1- get data from Excel
 
-  /* const listmusic = converExcelToJson(req.body.path_Excel);
+  const listmusic = converExcelToJson(req.body.path_Excel);
   await Promise.all(
     listmusic.map(async (music) => {
       const newMusic = await Musical.create(music);
       concert.music.push(newMusic._id);
     })
-  );*/
+  );
   // 2- save
   const newConcert = await Concert.create(req.body);
 
+  const chorists = await User.find({
+    role: "chorist",
+    //status_elimination: "none",
+  });
+  const choristId = chorists.map((chorist) => chorist._id);
+
+  const emailList = chorists.map((chorist) => chorist.email);
+  const confirmUrl = `localhost:8000/api/v1/users/confirm-concert/${newConcert._id}`;
+  const declineUrl = `localhost:8000/api/v1/users/decline-concert/${newConcert._id}`;
+  sendEmail({
+    email: emailList,
+    subject: "validation email",
+    message: "ekjneknke",
+    html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
+        <h1 style="width: 100%;color: white; background-color:rgb(0, 229, 255);text-align: center ; padding: 10px 0px">ORCHESTRE</h1>
+        <a href="${declineUrl}" style="margin-top: 100px;  padding: 10px 20px;color: white; background-color:rgb(0, 229, 255) ;"> decline </a>
+        <a href="${confirmUrl}" style="margin-top: 100px;  padding: 10px 20px;color: white; background-color:rgb(0, 229, 255) ;">confirme</a>
+    </div>`,
+  });
+
+  newConcert.list_candidate = choristId;
+  await newConcert.save();
   // 3- send response
   res.status(200).json({ newConcert });
 });
@@ -88,6 +110,16 @@ exports.checkDisponiblilte = asyncHandler(async (req, res, next) => {
   await concert.save();
   const confirmUrl = `localhost:8000/api/v1/users/confirm-concert/${concertId}`;
   const declineUrl = `localhost:8000/api/v1/users/decline-concert/${concertId}`;
+  sendEmail({
+    email: req.body.email,
+    subject: "validation email",
+    message: "ekjneknke",
+    html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
+        <h1 style="width: 100%;color: white; background-color:rgb(0, 229, 255);text-align: center ; padding: 10px 0px">ORCHESTRE</h1>
+        <a href="${declineUrl}" style="margin-top: 100px;  padding: 10px 20px;color: white; background-color:rgb(0, 229, 255) ;"> decline </a>
+        <a href="${confirmUrl}" style="margin-top: 100px;  padding: 10px 20px;color: white; background-color:rgb(0, 229, 255) ;">confirme</a>
+    </div>`,
+  });
 
   res
     .status(200)

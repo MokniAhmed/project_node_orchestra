@@ -7,7 +7,7 @@ const {
   getPorcentagePresenceInSeasonForAnyPupitre,
   getPorcentagePresenceInConcertForAnyPupitre,
 } = require("../services/presenceService");
-const { protect } = require("../middlewares/authMiddleware");
+const { protect, allowedTo } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 /**
@@ -86,7 +86,12 @@ router.put("/qrcode", protect, markPrsence);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.put("/add-manualy/:id", addPrsenceManualy);
+router.put(
+  "/add-manualy/:id",
+  protect,
+  // allowedTo("manager_choeur"),
+  addPrsenceManualy
+);
 /**
  * @swagger
  * /api/v1/presence/demandeAbsent:
@@ -127,7 +132,7 @@ router.put("/add-manualy/:id", addPrsenceManualy);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.put("/demandeAbsent", protect, demandeAbsent);
+router.post("/demandeAbsent", protect, demandeAbsent);
 /**
  * @swagger
  * /api/v1/presence/nbr_presence_in_season_for_any_pupitre/{id}:

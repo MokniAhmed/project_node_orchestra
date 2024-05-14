@@ -7,11 +7,8 @@ exports.createNewMusicalValidator = [
     .withMessage("title required")
     .isLength({ min: 2 })
     .withMessage("Too short title "),
-  check("composator")
-    .notEmpty()
-    .withMessage("composator required")
-    .isLength({ min: 3 })
-    .withMessage("Too short composator "),
+  check("composator").notEmpty().withMessage("composator required"),
+
   check("genre").notEmpty().withMessage("genre required"),
   check("arrangeurs").notEmpty().withMessage("arrangeurs required"),
   check("lyrics").notEmpty().withMessage("lyrics required"),

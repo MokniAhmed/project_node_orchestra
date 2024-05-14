@@ -66,6 +66,8 @@ exports.sendMultipleNotification = async (options) => {
     //   message: options.message,
     //   html: options.tamplate,
     // });
+            sendNotificationSocketToChorist(options.users, options.message);
+
     const sheduleM = schedule.scheduleJob(
       { rule: genererRegleCron(rangeTimes, options.nbrNotif) },
       async () => {
