@@ -197,7 +197,7 @@ exports.confirmPresence = asyncHandler(async (req, res, next) => {
   const { list_final: listFinal, list_candidate: candidateList } = concert;
   if (!candidateList.includes(req.user._id))
     next(new ApiError("your not invited ", 403));
-  if (!listFinal.includes(req.user._id))
+  if (listFinal.includes(req.user._id))
     next(new ApiError("you confirm already  ", 403));
   listFinal.push(req.user._id);
   concert.list_final = listFinal;
@@ -205,6 +205,20 @@ exports.confirmPresence = asyncHandler(async (req, res, next) => {
   res
     .status(200)
     .json({ status: "sucess", message: "added to the final list" });
+});
+
+// @desc    confirm disponibility
+// @route   put /api/v1/users/confirm/id
+// @access  Private/Protect
+exports.declinePresence = asyncHandler(async (req, res, next) => {
+  // const concert = await Concert.findById(req.params.id);
+  // const { list_final: listFinal, list_candidate: candidateList } = concert;
+  // candidateList.filter((id) => id !== req.user._id);
+  // concert.list_candidate = candidateList;
+  // concert.save();
+  res
+    .status(200)
+    .json({ status: "sucess", message: "declined to the final list" });
 });
 
 // @desc    update testiture vocale
@@ -258,12 +272,16 @@ exports.sendNotificationUrgente = asyncHandler(async (req, res, next) => {
     status_elimination: "none",
   });
   const emailList = lisetUser.map((chorist) => chorist.email);
-
+  console.log(lisetUser);
+  console.log(emailList, pupitre);
+  console.log(req.body.subject);
+  console.log(req.body.message);
   sendEmail({
     email: emailList,
-    subject: "urgent",
+    subject: req.body.subject,
     message: req.body.message,
   });
+  // console.log(ress);
   sendNotificationSocketToPupitre(pupitre, req.body.message);
 
   res.send("hello");

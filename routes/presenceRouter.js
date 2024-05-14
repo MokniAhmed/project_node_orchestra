@@ -89,7 +89,7 @@ router.put("/qrcode", protect, markPrsence);
 router.put(
   "/add-manualy/:id",
   protect,
-  allowedTo("manager_choeur"),
+  // allowedTo("manager_choeur"),
   addPrsenceManualy
 );
 /**
