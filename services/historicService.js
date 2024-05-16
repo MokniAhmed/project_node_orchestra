@@ -246,31 +246,73 @@ exports.getStatistique = asyncHandler(async (req, res, next) => {
       break;
     case "oeuvre":
       aggregationPipeline = [
+        // Unwind the music array to work with individual music entries
         {
           $unwind: "$music",
         },
+        // Group by music to count occurrences and collect pupitres
         {
           $group: {
-            _id: {
-              user_sender: "$user_sender",
-              music: "$music",
-            },
+            _id: "$music",
             musicCount: { $sum: 1 },
+            pupitres: { $addToSet: "$pupitre" },
           },
         },
+        // Perform a lookup to join the musicals collection to get additional details for each music piece
+        {
+          $lookup: {
+            from: "musicals", // Ensure this is the correct collection name
+            localField: "_id",
+            foreignField: "_id",
+            as: "musicInfo",
+          },
+        },
+        // Unwind the results from the lookup stage to flatten the joined documents
+        {
+          $unwind: "$musicInfo",
+        },
+        // Add a field for the number of unique pupitres
+        {
+          $addFields: {
+            pupitreCount: { $size: "$pupitres" },
+          },
+        },
+        // Group to calculate total music count for percentage calculation
         {
           $group: {
-            _id: "$_id.user_sender",
-            musicDetails: {
+            _id: null,
+            totalMusicCount: { $sum: "$musicCount" },
+            musicData: {
               $push: {
-                music: "$_id.music",
+                music: "$_id",
                 musicCount: "$musicCount",
+                title: "$musicInfo.title",
+                pupitreCount: "$pupitreCount",
               },
             },
           },
         },
+        // Unwind to calculate percentage
+        {
+          $unwind: "$musicData",
+        },
+        // Project final structure with percentage
+        {
+          $project: {
+            _id: 0,
+            music: "$musicData.music",
+            title: "$musicData.title",
+            musicCount: "$musicData.musicCount",
+            pupitreCount: "$musicData.pupitreCount",
+            percentage: {
+              $multiply: [
+                { $divide: ["$musicData.musicCount", "$totalMusicCount"] },
+                100,
+              ],
+            },
+          },
+        },
       ];
-
       break;
     default:
       next(new ApiError("Invalid critere value", 400));
