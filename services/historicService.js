@@ -73,64 +73,62 @@ exports.getStatistique = asyncHandler(async (req, res, next) => {
             _id: "$concert",
             presentConcert: {
               $sum: {
-                $cond: {
-                  if: {
+                $cond: [
+                  {
                     $and: [
                       { $eq: ["$status", "present"] },
                       { $eq: ["$event", "concert"] },
                     ],
                   },
-                  then: 1,
-                  else: 0,
-                },
+                  1,
+                  0,
+                ],
               },
             },
-
             absentConcert: {
               $sum: {
-                $cond: {
-                  if: {
+                $cond: [
+                  {
                     $and: [
                       { $eq: ["$status", "absent"] },
                       { $eq: ["$event", "concert"] },
                     ],
                   },
-                  then: 1,
-                  else: 0,
-                },
+                  1,
+                  0,
+                ],
               },
             },
             presentRep: {
               $sum: {
-                $cond: {
-                  if: {
+                $cond: [
+                  {
                     $and: [
                       { $eq: ["$status", "present"] },
                       { $eq: ["$event", "rep"] },
                     ],
                   },
-                  then: 1,
-                  else: 0,
-                },
+                  1,
+                  0,
+                ],
               },
             },
             absentRep: {
               $sum: {
-                $cond: {
-                  if: {
+                $cond: [
+                  {
                     $and: [
                       { $eq: ["$status", "absent"] },
                       { $eq: ["$event", "rep"] },
                     ],
                   },
-                  then: 1,
-                  else: 0,
-                },
+                  1,
+                  0,
+                ],
               },
             },
           },
         },
-
         {
           $lookup: {
             from: "concerts",
@@ -153,7 +151,6 @@ exports.getStatistique = asyncHandler(async (req, res, next) => {
           },
         },
       ];
-
       break;
     case "chorist":
       aggregationPipeline = [

@@ -85,20 +85,19 @@ exports.checkDisponiblilte = asyncHandler(async (req, res, next) => {
   });
   const emailList = chorists.map((chorist) => chorist.email);
   const choristId = chorists.map((chorist) => chorist._id);
-  console.log(choristId);
 
   const concert = await Concert.findById(req.params.id);
 
   if (!concert) next(new ApiError("no concert with this ID", 400));
 
-  const { _id: concertId, name, location, date, music } = concert;
+  const { _id: concertId, name, location, day, music } = concert;
   await Promise.all(
     chorists.map(async (chorist) => {
       await Historic.create({
         user_sender: chorist._id,
         pupitre: chorist.group_pupitre,
         event: "concert",
-        date: date,
+        date: day,
         music: music,
         concert: concertId,
         season: concert.season,
@@ -108,17 +107,41 @@ exports.checkDisponiblilte = asyncHandler(async (req, res, next) => {
 
   concert.list_candidate = choristId;
   await concert.save();
-  const confirmUrl = `localhost:8000/api/v1/users/confirm-concert/${concertId}`;
-  const declineUrl = `localhost:8000/api/v1/users/decline-concert/${concertId}`;
+  const confirmUrl = `http://127.0.0.1:5173/confirm-concert/${concertId}`;
+  const declineUrl = `http://127.0.0.1:5173/decline-concert/${concertId}`;
+  const formattedDate = new Date(day).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const formattedTime = new Date(day).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const htmlContent = `
+  <div style="width: 100%; max-width: 600px; margin: 0 auto; border: 1px solid #00e5ff; font-family: Arial, Helvetica, sans-serif;">
+    <div style="background-color: #00e5ff; color: white; text-align: center; padding: 20px;">
+      <h1>ORCHESTRE</h1>
+    </div>
+    <div style="padding: 20px; text-align: center;">
+      <p style="font-size: 16px;">Please confirm or decline your attendance for the concert "<strong>${name}</strong>" at "<strong>${location}</strong>" on "<strong>${formattedDate}</strong>" at "<strong>${formattedTime}</strong>".</p>
+      <div style="margin: 20px 0;">
+        <a href="${confirmUrl}" style="display: inline-block; margin: 10px; padding: 15px 25px; color: white; background-color: #28a745; text-decoration: none; border-radius: 5px;">Confirm</a>
+        <a href="${declineUrl}" style="display: inline-block; margin: 10px; padding: 15px 25px; color: white; background-color: #dc3545; text-decoration: none; border-radius: 5px;">Decline</a>
+      </div>
+    </div>
+    <div style="background-color: #f8f9fa; color: #6c757d; text-align: center; padding: 10px;">
+      <p style="font-size: 12px;">&copy; ${new Date().getFullYear()} ORCHESTRE. All rights reserved.</p>
+    </div>
+  </div>`;
+
+  console.log(htmlContent);
   sendEmail({
-    email: req.body.email,
+    email: emailList,
     subject: "validation email",
     message: "ekjneknke",
-    html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
-        <h1 style="width: 100%;color: white; background-color:rgb(0, 229, 255);text-align: center ; padding: 10px 0px">ORCHESTRE</h1>
-        <a href="${declineUrl}" style="margin-top: 100px;  padding: 10px 20px;color: white; background-color:rgb(0, 229, 255) ;"> decline </a>
-        <a href="${confirmUrl}" style="margin-top: 100px;  padding: 10px 20px;color: white; background-color:rgb(0, 229, 255) ;">confirme</a>
-    </div>`,
+    html: htmlContent,
   });
 
   res
