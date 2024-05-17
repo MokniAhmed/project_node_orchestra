@@ -128,23 +128,32 @@ exports.deleteRepetition = factory.deleteOne(Repetition);
 exports.getAllRepetition = factory.getAll(Repetition);
 exports.getRepeitionById = factory.getOne(Repetition);
 exports.getQrCode = asyncHandler(async (req, res, next) => {
-  const url = `localhost:8000/api/v1/presence/qrcode/${req.params.id}`;
+  const { id } = req.params;
+  let eventType = null;
+  // Search for the ID in the Concert collection
+  const concert = await Concert.findById(id);
+  if (concert) {
+    eventType = "concert";
+  }
+  // Search for the ID in the Repetition collection if not found in Concert
+  const repetition = !eventType ? await Repetition.findById(id) : null;
+  if (repetition) {
+    eventType = "repetition";
+  }
+
+  if (!eventType) {
+    return next(new ApiError("No event found with this ID.", 400));
+  }
+  const url = `http://localhost:8000/api/v1/presence/qrcode/${id}?event=${eventType}`;
   QRCode.toDataURL(url, (err, qrCodeUrl) => {
     if (err) {
-      next(new ApiError("there s error in the generation of code ", 500));
+      next(
+        new ApiError("There was an error in the generation of the code", 500)
+      );
     } else {
-      res.send(`
-      <!DOCTYPE HTML>
-      <html>
-      <head>
-            <title>QR Code Generator </title>
-      </head>
-      <body>
-      <img src="${qrCodeUrl}" alt="QR Code" />
-        <p> Scan the QR Code to indicate the presence </p>
-      </body>
-      </html>
-        `);
+      res.json({ qrCodeUrl });
     }
   });
 });
+
+//l

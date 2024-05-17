@@ -8,6 +8,8 @@ const {
   getPorcentagePresenceInConcertForAnyPupitre,
 } = require("../services/presenceService");
 const { protect, allowedTo } = require("../middlewares/authMiddleware");
+const { route } = require("./userRoute");
+const { getQrCode } = require("../services/repetitionService");
 
 const router = express.Router();
 /**
@@ -51,6 +53,7 @@ const router = express.Router();
  *         $ref: '#/components/responses/404'
  */
 router.put("/qrcode", protect, markPrsence);
+router.get("/qrcode/:id", getQrCode);
 /**
  * @swagger
  * /api/v1/presence/add-manualy/{id}:
