@@ -19,6 +19,10 @@ concertSchema.pre(/^find/, function (next) {
     select: " firstName lastName phone group_pupitre",
   });
   this.populate({
+    path: "list_candidate",
+    select: " firstName lastName phone group_pupitre",
+  });
+  this.populate({
     path: "music",
     select: " title date_composition genre ",
   });
