@@ -22,10 +22,10 @@ concertSchema.pre(/^find/, function (next) {
     path: "list_candidate",
     select: " firstName lastName phone group_pupitre",
   });
-  this.populate({
+  /*   this.populate({
     path: "music",
     select: " title date_composition genre ",
-  });
+  }); */
   next();
 });
 const Concert = mongoose.model("Concert", concertSchema);

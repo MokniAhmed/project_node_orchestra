@@ -127,6 +127,10 @@ exports.updateRepetition = factory.updateOne(Repetition);
 exports.deleteRepetition = factory.deleteOne(Repetition);
 exports.getAllRepetition = factory.getAll(Repetition);
 exports.getRepeitionById = factory.getOne(Repetition);
+exports.getRepeitionDetailedById = factory.getOne(Repetition, [
+  "music",
+  "list_invited",
+]);
 exports.getQrCode = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   let eventType = null;

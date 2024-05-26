@@ -6,6 +6,7 @@ const {
   deleteRepetition,
   updateRepetition,
   getQrCode,
+  getRepeitionDetailedById,
 } = require("../services/repetitionService");
 
 const router = express.Router();
@@ -119,7 +120,10 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .get(getRepeitionById)
+  .get(getRepeitionById);
+router
+  .route("/detailed/:id")
+  .get(getRepeitionDetailedById)
   /**
    * @swagger
    * /api/v1/repetition/{id}:
