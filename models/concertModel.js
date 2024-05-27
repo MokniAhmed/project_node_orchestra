@@ -14,18 +14,16 @@ const concertSchema = new mongoose.Schema(
   { timestamps: true }
 );
 concertSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: "list_final",
-    select: " firstName lastName phone group_pupitre",
-  });
-  this.populate({
-    path: "list_candidate",
-    select: " firstName lastName phone group_pupitre",
-  });
-  /*   this.populate({
-    path: "music",
-    select: " title date_composition genre ",
-  }); */
+  if (!this.getOptions().skipConcertPopulation) {
+    this.populate({
+      path: "list_final",
+      select: " firstName lastName phone group_pupitre",
+    });
+    this.populate({
+      path: "list_candidate",
+      select: " firstName lastName phone group_pupitre",
+    });
+  }
   next();
 });
 const Concert = mongoose.model("Concert", concertSchema);
