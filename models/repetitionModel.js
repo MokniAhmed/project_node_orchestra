@@ -41,7 +41,7 @@ repetitionSchema.pre(/^find/, function (next) {
   });
   this.populate({
     path: "list_invited",
-    select: "firstName",
+    select: "firstName lastName",
   });
   next();
 });
