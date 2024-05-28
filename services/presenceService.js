@@ -97,6 +97,7 @@ exports.addPrsenceManualy = asyncHandler(async (req, res, next) => {
     req.params.id,
     {
       status: "present",
+      reason: req.body.reason,
     },
     { new: true }
   );
