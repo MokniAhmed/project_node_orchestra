@@ -193,32 +193,81 @@ exports.createNotificationRep = asyncHandler(async (req, res, next) => {
 // @access  Private/Protect
 exports.confirmPresence = asyncHandler(async (req, res, next) => {
   const concert = await Concert.findById(req.params.id);
-  if (!concert) next(new ApiError("no concert found with this ID.", 400));
+  if (!concert)
+    return next(new ApiError("No concert found with this ID.", 400));
+
   const { list_final: listFinal, list_candidate: candidateList } = concert;
   if (!candidateList.includes(req.user._id))
-    next(new ApiError("your not invited ", 403));
+    return next(new ApiError("You're not invited", 403));
   if (listFinal.includes(req.user._id))
-    next(new ApiError("you confirm already  ", 403));
+    return next(new ApiError("You've already confirmed", 403));
+
   listFinal.push(req.user._id);
   concert.list_final = listFinal;
   await concert.save();
+
+  // Send confirmation email
+  const user = await User.findById(req.user._id);
+  if (!user) return next(new ApiError("User not found", 404));
+
+  const confirmationEmailContent = `
+    <div style="width: 100%; max-width: 600px; margin: 0 auto; border: 1px solid #00e5ff; font-family: Arial, Helvetica, sans-serif;">
+      <div style="background-color: #00e5ff; color: white; text-align: center; padding: 20px;">
+        <h1>ORCHESTRE</h1>
+      </div>
+      <div style="padding: 20px; text-align: center;">
+        <p style="font-size: 16px;">You have successfully confirmed your attendance for the concert "<strong>${
+          concert.name
+        }</strong>" at "<strong>${
+    concert.location
+  }</strong>" on "<strong>${new Date(concert.date).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })}</strong>" at "<strong>${new Date(concert.date).toLocaleTimeString(
+    "en-US",
+    { hour: "2-digit", minute: "2-digit" }
+  )}</strong>".</p>
+      </div>
+      <div style="background-color: #f8f9fa; color: #6c757d; text-align: center; padding: 10px;">
+        <p style="font-size: 12px;">&copy; ${new Date().getFullYear()} ORCHESTRE. All rights reserved.</p>
+      </div>
+    </div>`;
+
+  await sendEmail({
+    email: user.email,
+    subject: "Concert Confirmation",
+    message: `You have successfully confirmed your attendance for the concert "${concert.name}".`,
+    html: confirmationEmailContent,
+  });
+
   res
     .status(200)
-    .json({ status: "sucess", message: "added to the final list" });
+    .json({
+      status: "success",
+      message: "Added to the final list and confirmation email sent",
+    });
 });
 
 // @desc    confirm disponibility
 // @route   put /api/v1/users/confirm/id
 // @access  Private/Protect
 exports.declinePresence = asyncHandler(async (req, res, next) => {
-  // const concert = await Concert.findById(req.params.id);
-  // const { list_final: listFinal, list_candidate: candidateList } = concert;
-  // candidateList.filter((id) => id !== req.user._id);
-  // concert.list_candidate = candidateList;
-  // concert.save();
+  const concert = await Concert.findById(req.params.id);
+  if (!concert)
+    return next(new ApiError("No concert found with this ID.", 400));
+
+  let { list_candidate: candidateList } = concert;
+  candidateList = candidateList.filter(
+    (id) => id.toString() !== req.user._id.toString()
+  );
+  concert.list_candidate = candidateList;
+  await concert.save();
+
   res
     .status(200)
-    .json({ status: "sucess", message: "declined to the final list" });
+    .json({ status: "success", message: "Declined the invitation" });
 });
 
 // @desc    update testiture vocale

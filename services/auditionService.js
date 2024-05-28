@@ -25,14 +25,7 @@ exports.createAudition = asyncHandler(async (req, res, next) => {
   const job = schedule.scheduleJob({ rule: "*/1 * * * *" }, () =>
     startJob(startTime, endTime, interval, job)
   );
-  console.log(job.name);
-  schedule.cancelJob(job.name);
 
-  console.log("job canceled ");
-  const job2 = schedule.scheduleJob({ rule: "*/1 * * * *" }, () =>
-    startJob(startTime, endTime, interval, job2)
-  );
-  console.log(job2.name);
   res.status(201).json({ data: newAudit });
 });
 

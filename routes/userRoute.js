@@ -28,6 +28,7 @@ const {
   updateTestitureVocale,
   sendNotificationUrgente,
   confirmPresence,
+  declinePresence,
 } = require("../services/userService");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -89,6 +90,12 @@ router.post(
   authMiddleware.protect,
   authMiddleware.allowedTo("chorist"),
   confirmPresence
+);
+router.post(
+  "/decline-concert/:id",
+  authMiddleware.protect,
+  authMiddleware.allowedTo("chorist"),
+  declinePresence
 );
 /**
  * @swagger

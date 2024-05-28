@@ -33,6 +33,18 @@ const repetitionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+repetitionSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "concert",
+    select: "name",
+    options: { skipConcertPopulation: true },
+  });
+  this.populate({
+    path: "list_invited",
+    select: "firstName lastName",
+  });
+  next();
+});
 
 const Repetition = mongoose.model("Repetition", repetitionSchema);
 module.exports = Repetition;

@@ -13,38 +13,82 @@ const { arrayToJson } = require("../utils/arrayToJson");
 // @access  public/chorist
 exports.markPrsence = asyncHandler(async (req, res, next) => {
   const { event, rep, concert } = req.body;
-  console.log(req.user._id);
+  const userId = req.user._id;
+
+  console.log(req.body);
 
   let historic = null;
-  if (event === "rep") {
-    historic = await Historic.findOneAndUpdate(
-      {
+
+  try {
+    if (event === "rep") {
+      historic = await Historic.findOne({
         rep,
         event,
-        user_sender: req.user._id,
-      },
-      {
+        user_sender: userId,
         status: "present",
-      },
-      { new: true }
-    );
-  } else {
-    historic = await Historic.findOneAndUpdate(
-      {
+      });
+
+      if (historic) {
+        return next(
+          new ApiError(
+            "User has already marked presence for this repetition.",
+            400
+          )
+        );
+      }
+
+      historic = await Historic.findOneAndUpdate(
+        {
+          rep,
+          event,
+          user_sender: userId,
+        },
+        {
+          status: "present",
+        },
+        { new: true }
+      );
+    } else {
+      historic = await Historic.findOne({
         concert,
         event,
-        user_sender: req.user._id,
-      },
-      {
+        user_sender: userId,
         status: "present",
-      },
-      { new: true }
-    );
-  }
-  // if (!historic) next(new ApiError("no historic with this data enter.", 400));
-  res.status(200).json({ message: "user mark present" });
-});
+      });
 
+      if (historic) {
+        return next(
+          new ApiError(
+            "User has already marked presence for this concert.",
+            400
+          )
+        );
+      }
+
+      historic = await Historic.findOneAndUpdate(
+        {
+          concert,
+          event,
+          user_sender: userId,
+        },
+        {
+          status: "present",
+        },
+        { new: true }
+      );
+    }
+
+    if (!historic) {
+      return next(
+        new ApiError("No historic record found with the provided data.", 400)
+      );
+    }
+
+    res.status(200).json({ message: "User marked present" });
+  } catch (error) {
+    next(error);
+  }
+});
 // @desc    add presence to the repetition & concert
 // @route   POST /api/v1/presence/add-manualy/:id
 // @access  private/admin-chef-chorist

@@ -14,10 +14,12 @@ exports.getHistoryByUser = asyncHandler(async (req, res, next) => {
   const musicName = req.query.music || undefined;
 
   // Define the base query without season conditions
+
   const baseQuery = {
     user_sender: req.params.id,
     status: "present",
   };
+  console.log(baseQuery);
   // Add season conditions based on the provided seasonState
   if (seasonState) {
     if (seasonState === "new") {
@@ -71,64 +73,62 @@ exports.getStatistique = asyncHandler(async (req, res, next) => {
             _id: "$concert",
             presentConcert: {
               $sum: {
-                $cond: {
-                  if: {
+                $cond: [
+                  {
                     $and: [
                       { $eq: ["$status", "present"] },
                       { $eq: ["$event", "concert"] },
                     ],
                   },
-                  then: 1,
-                  else: 0,
-                },
+                  1,
+                  0,
+                ],
               },
             },
-
             absentConcert: {
               $sum: {
-                $cond: {
-                  if: {
+                $cond: [
+                  {
                     $and: [
                       { $eq: ["$status", "absent"] },
                       { $eq: ["$event", "concert"] },
                     ],
                   },
-                  then: 1,
-                  else: 0,
-                },
+                  1,
+                  0,
+                ],
               },
             },
             presentRep: {
               $sum: {
-                $cond: {
-                  if: {
+                $cond: [
+                  {
                     $and: [
                       { $eq: ["$status", "present"] },
                       { $eq: ["$event", "rep"] },
                     ],
                   },
-                  then: 1,
-                  else: 0,
-                },
+                  1,
+                  0,
+                ],
               },
             },
             absentRep: {
               $sum: {
-                $cond: {
-                  if: {
+                $cond: [
+                  {
                     $and: [
                       { $eq: ["$status", "absent"] },
                       { $eq: ["$event", "rep"] },
                     ],
                   },
-                  then: 1,
-                  else: 0,
-                },
+                  1,
+                  0,
+                ],
               },
             },
           },
         },
-
         {
           $lookup: {
             from: "concerts",
@@ -151,7 +151,6 @@ exports.getStatistique = asyncHandler(async (req, res, next) => {
           },
         },
       ];
-
       break;
     case "chorist":
       aggregationPipeline = [
@@ -244,31 +243,73 @@ exports.getStatistique = asyncHandler(async (req, res, next) => {
       break;
     case "oeuvre":
       aggregationPipeline = [
+        // Unwind the music array to work with individual music entries
         {
           $unwind: "$music",
         },
+        // Group by music to count occurrences and collect pupitres
         {
           $group: {
-            _id: {
-              user_sender: "$user_sender",
-              music: "$music",
-            },
+            _id: "$music",
             musicCount: { $sum: 1 },
+            pupitres: { $addToSet: "$pupitre" },
           },
         },
+        // Perform a lookup to join the musicals collection to get additional details for each music piece
+        {
+          $lookup: {
+            from: "musicals", // Ensure this is the correct collection name
+            localField: "_id",
+            foreignField: "_id",
+            as: "musicInfo",
+          },
+        },
+        // Unwind the results from the lookup stage to flatten the joined documents
+        {
+          $unwind: "$musicInfo",
+        },
+        // Add a field for the number of unique pupitres
+        {
+          $addFields: {
+            pupitreCount: { $size: "$pupitres" },
+          },
+        },
+        // Group to calculate total music count for percentage calculation
         {
           $group: {
-            _id: "$_id.user_sender",
-            musicDetails: {
+            _id: null,
+            totalMusicCount: { $sum: "$musicCount" },
+            musicData: {
               $push: {
-                music: "$_id.music",
+                music: "$_id",
                 musicCount: "$musicCount",
+                title: "$musicInfo.title",
+                pupitreCount: "$pupitreCount",
               },
             },
           },
         },
+        // Unwind to calculate percentage
+        {
+          $unwind: "$musicData",
+        },
+        // Project final structure with percentage
+        {
+          $project: {
+            _id: 0,
+            music: "$musicData.music",
+            title: "$musicData.title",
+            musicCount: "$musicData.musicCount",
+            pupitreCount: "$musicData.pupitreCount",
+            percentage: {
+              $multiply: [
+                { $divide: ["$musicData.musicCount", "$totalMusicCount"] },
+                100,
+              ],
+            },
+          },
+        },
       ];
-
       break;
     default:
       next(new ApiError("Invalid critere value", 400));
@@ -293,37 +334,7 @@ exports.addPrsenceAutomatiqly = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/history/
 // @access  private/admin
 exports.etatAbsentStat = asyncHandler(async (req, res, next) => {
-  if (!req.query.genre && !req.query.period) {
-    return next(
-      new ApiError("Request needs both genre and period queries", 400)
-    );
-  }
-  if (
-    req.query.genre !== "pupitre" &&
-    req.query.genre !== "chorist" &&
-    req.query.genre !== "general"
-  ) {
-    return next(
-      new ApiError(
-        "Invalid genre value. Accepted values are 'pupitre' or 'chorist' or 'general'",
-        400
-      )
-    );
-  }
-  if (req.query.period) {
-    if (
-      req.query.period !== "day" &&
-      req.query.period !== "since" &&
-      req.query.period !== "period"
-    ) {
-      return next(
-        new ApiError(
-          "Invalid period value. Accepted values are 'day', 'since', or 'period'",
-          400
-        )
-      );
-    }
-  }
+  const { genre, period, startday, date, startdate, enddate } = req.query;
 
   // Base aggregation pipeline
   const basePipeline = [
@@ -338,120 +349,154 @@ exports.etatAbsentStat = asyncHandler(async (req, res, next) => {
     },
   ];
 
-  // Modify match and group stages based on genre
-  if (req.query.genre === "pupitre") {
-    basePipeline[1] = {
-      $group: {
-        _id: { pupitre: "$pupitre" },
-        count: { $sum: 1 },
-        presentRep: {
-          $sum: {
-            $cond: {
-              if: {
-                $and: [
-                  { $eq: ["$status", "present"] },
-                  { $eq: ["$event", "rep"] },
-                ],
+  // Handle genre criteria
+  if (genre) {
+    if (genre !== "pupitre" && genre !== "chorist" && genre !== "general") {
+      return next(
+        new ApiError(
+          "Invalid genre value. Accepted values are 'pupitre', 'chorist', or 'general'",
+          400
+        )
+      );
+    }
+
+    // Modify match and group stages based on genre
+    if (genre === "pupitre") {
+      basePipeline[1] = {
+        $group: {
+          _id: { pupitre: "$pupitre" },
+          count: { $sum: 1 },
+          presentRep: {
+            $sum: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$status", "present"] },
+                    { $eq: ["$event", "rep"] },
+                  ],
+                },
+                then: 1,
+                else: 0,
               },
-              then: 1,
-              else: 0,
+            },
+          },
+          absentRep: {
+            $sum: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$status", "absent"] },
+                    { $eq: ["$event", "rep"] },
+                  ],
+                },
+                then: 1,
+                else: 0,
+              },
             },
           },
         },
-        absentRep: {
-          $sum: {
-            $cond: {
-              if: {
-                $and: [
-                  { $eq: ["$status", "absent"] },
-                  { $eq: ["$event", "rep"] },
-                ],
+      };
+      basePipeline.push({
+        $project: {
+          _id: 0,
+          pupitre: "$_id.pupitre",
+          count: "$count",
+          presentRep: "$presentRep",
+          absentRep: "$absentRep",
+        },
+      });
+    } else if (genre === "chorist") {
+      basePipeline[1] = {
+        $group: {
+          _id: { user_sender: "$user_sender" },
+          presentRep: {
+            $sum: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$status", "present"] },
+                    { $eq: ["$event", "rep"] },
+                  ],
+                },
+                then: 1,
+                else: 0,
               },
-              then: 1,
-              else: 0,
             },
           },
-        },
-      },
-    };
-    basePipeline.push({
-      $project: {
-        _id: 0,
-        pupitre: "$_id.pupitre",
-        count: "$count",
-        presentRep: "$presentRep",
-        absentRep: "$absentRep",
-      },
-    });
-  } else if (req.query.genre === "chorist") {
-    basePipeline[1] = {
-      $group: {
-        _id: { user_sender: "$user_sender" },
-        presentRep: {
-          $sum: {
-            $cond: {
-              if: {
-                $and: [
-                  { $eq: ["$status", "present"] },
-                  { $eq: ["$event", "rep"] },
-                ],
+          absentRep: {
+            $sum: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$status", "absent"] },
+                    { $eq: ["$event", "rep"] },
+                  ],
+                },
+                then: 1,
+                else: 0,
               },
-              then: 1,
-              else: 0,
             },
           },
+          count: { $sum: 1 },
         },
-        absentRep: {
-          $sum: {
-            $cond: {
-              if: {
-                $and: [
-                  { $eq: ["$status", "absent"] },
-                  { $eq: ["$event", "rep"] },
-                ],
-              },
-              then: 1,
-              else: 0,
-            },
-          },
+      };
+      basePipeline.push({
+        $lookup: {
+          from: "users",
+          localField: "_id.user_sender",
+          foreignField: "_id",
+          as: "userDetails",
         },
-        count: { $sum: 1 },
-      },
-    };
-    basePipeline.push({
-      $lookup: {
-        from: "users",
-        localField: "_id.user_sender",
-        foreignField: "_id",
-        as: "userDetails",
-      },
-    });
-    // Add $unwind stage to destructure the user details array
-    basePipeline.push({
-      $unwind: "$userDetails",
-    });
-    // Add $project stage to reshape the output
-    basePipeline.push({
-      $project: {
-        _id: 0,
-        chorist: "$userDetails.firstName", // Replace with the actual field you want
-        count: "$count",
-        presentRep: "$presentRep",
-        absentRep: "$absentRep",
-      },
-    });
+      });
+      // Add $unwind stage to destructure the user details array
+      basePipeline.push({
+        $unwind: "$userDetails",
+      });
+      // Add $project stage to reshape the output
+      basePipeline.push({
+        $project: {
+          _id: 0,
+          chorist: "$userDetails.firstName", // Replace with the actual field you want
+          count: "$count",
+          presentRep: "$presentRep",
+          absentRep: "$absentRep",
+        },
+      });
+    }
   }
 
-  // Modify match stage based on period
-  if (req.query.period === "day") {
-    basePipeline[0].$match.date = new Date(req.query.startday);
-  } else if (req.query.period === "since") {
-    basePipeline[0].$match.date = { $gte: new Date(req.query.date) };
-  } else if (req.query.period === "period") {
-    basePipeline[0].$match.date = {
-      $gte: new Date(req.query.startdate),
-      $lte: new Date(req.query.enddate),
-    };
+  // Handle period criteria
+  if (period) {
+    if (
+      period !== "day" &&
+      period !== "since" &&
+      period !== "period" &&
+      period !== "debseason"
+    ) {
+      return next(
+        new ApiError(
+          "Invalid period value. Accepted values are 'day', 'since', 'period', or 'debseason'",
+          400
+        )
+      );
+    }
+
+    if (period === "day") {
+      basePipeline[0].$match.date = new Date(startday);
+    } else if (period === "since") {
+      basePipeline[0].$match.date = { $gte: new Date(date) };
+    } else if (period === "period") {
+      basePipeline[0].$match.date = {
+        $gte: new Date(startdate),
+        $lte: new Date(enddate),
+      };
+    } else if (period === "debseason") {
+      const ActiveSeason = await Season.findOne({ state_season: "new" });
+      if (!ActiveSeason) {
+        return next(new ApiError("No active season found", 404));
+      }
+      basePipeline[0].$match.date = { $gte: ActiveSeason.startSeason };
+    }
   }
 
   const stats = await Historic.aggregate(basePipeline);

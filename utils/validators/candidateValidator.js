@@ -18,15 +18,15 @@ exports.createCondidateValidator = [
     .notEmpty()
     .withMessage("Email required")
     .isEmail()
-    .withMessage("Invalid email address")
-    .custom((val) =>
+    .withMessage("Invalid email address"),
+  /*    .custom((val) =>
       Condidate.findOne({ email: val }).then((condidate) => {
         if (condidate) {
           return Promise.reject(new Error("E-mail already in condidate"));
         }
         return true;
       })
-    ),
+    ), */
   check("birthday")
     .notEmpty()
     .withMessage("birthday required")
