@@ -64,7 +64,7 @@ exports.addPrsenceManualy = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/presence/demandeAbsent
 // @access  private/chorist
 exports.demandeAbsent = asyncHandler(async (req, res, next) => {
-  const { event, rep, concert } = req.body;
+  const { event, rep, concert, reason } = req.body;
 
   let historic = null;
   if (event === "rep") {
@@ -73,6 +73,7 @@ exports.demandeAbsent = asyncHandler(async (req, res, next) => {
         rep,
         event,
         user_sender: req.user._id,
+        reason: reason,
       },
       {
         status: "absent_demanded",
@@ -85,6 +86,7 @@ exports.demandeAbsent = asyncHandler(async (req, res, next) => {
         concert,
         event,
         user_sender: req.user._id,
+        reason: reason,
       },
       {
         status: "absent_demanded",
