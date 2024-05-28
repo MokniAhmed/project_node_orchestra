@@ -253,7 +253,7 @@ exports.eliminationStatus = asyncHandler(async (req, res, next) => {
 
 exports.updateTestitureVocale = asyncHandler(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(req.params.id, {
-    tessiture_vocale: req.body.tessiture_vocale,
+    tessiture_vocale: [req.body.tessiture_vocale],
   });
   sendNotificationSocketToChorist(user.email, "new tessiture_vocale h");
   res.status(200).json({ user });
