@@ -39,6 +39,10 @@ repetitionSchema.pre(/^find/, function (next) {
     select: "name",
     options: { skipConcertPopulation: true },
   });
+  this.populate({
+    path: "list_invited",
+    select: "firstName",
+  });
   next();
 });
 

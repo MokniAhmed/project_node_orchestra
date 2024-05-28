@@ -334,37 +334,7 @@ exports.addPrsenceAutomatiqly = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/history/
 // @access  private/admin
 exports.etatAbsentStat = asyncHandler(async (req, res, next) => {
-  if (!req.query.genre && !req.query.period) {
-    return next(
-      new ApiError("Request needs both genre and period queries", 400)
-    );
-  }
-  if (
-    req.query.genre !== "pupitre" &&
-    req.query.genre !== "chorist" &&
-    req.query.genre !== "general"
-  ) {
-    return next(
-      new ApiError(
-        "Invalid genre value. Accepted values are 'pupitre' or 'chorist' or 'general'",
-        400
-      )
-    );
-  }
-  if (req.query.period) {
-    if (
-      req.query.period !== "day" &&
-      req.query.period !== "since" &&
-      req.query.period !== "period"
-    ) {
-      return next(
-        new ApiError(
-          "Invalid period value. Accepted values are 'day', 'since', or 'period'",
-          400
-        )
-      );
-    }
-  }
+  const { genre, period, startday, date, startdate, enddate } = req.query;
 
   // Base aggregation pipeline
   const basePipeline = [
@@ -379,120 +349,154 @@ exports.etatAbsentStat = asyncHandler(async (req, res, next) => {
     },
   ];
 
-  // Modify match and group stages based on genre
-  if (req.query.genre === "pupitre") {
-    basePipeline[1] = {
-      $group: {
-        _id: { pupitre: "$pupitre" },
-        count: { $sum: 1 },
-        presentRep: {
-          $sum: {
-            $cond: {
-              if: {
-                $and: [
-                  { $eq: ["$status", "present"] },
-                  { $eq: ["$event", "rep"] },
-                ],
+  // Handle genre criteria
+  if (genre) {
+    if (genre !== "pupitre" && genre !== "chorist" && genre !== "general") {
+      return next(
+        new ApiError(
+          "Invalid genre value. Accepted values are 'pupitre', 'chorist', or 'general'",
+          400
+        )
+      );
+    }
+
+    // Modify match and group stages based on genre
+    if (genre === "pupitre") {
+      basePipeline[1] = {
+        $group: {
+          _id: { pupitre: "$pupitre" },
+          count: { $sum: 1 },
+          presentRep: {
+            $sum: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$status", "present"] },
+                    { $eq: ["$event", "rep"] },
+                  ],
+                },
+                then: 1,
+                else: 0,
               },
-              then: 1,
-              else: 0,
+            },
+          },
+          absentRep: {
+            $sum: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$status", "absent"] },
+                    { $eq: ["$event", "rep"] },
+                  ],
+                },
+                then: 1,
+                else: 0,
+              },
             },
           },
         },
-        absentRep: {
-          $sum: {
-            $cond: {
-              if: {
-                $and: [
-                  { $eq: ["$status", "absent"] },
-                  { $eq: ["$event", "rep"] },
-                ],
+      };
+      basePipeline.push({
+        $project: {
+          _id: 0,
+          pupitre: "$_id.pupitre",
+          count: "$count",
+          presentRep: "$presentRep",
+          absentRep: "$absentRep",
+        },
+      });
+    } else if (genre === "chorist") {
+      basePipeline[1] = {
+        $group: {
+          _id: { user_sender: "$user_sender" },
+          presentRep: {
+            $sum: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$status", "present"] },
+                    { $eq: ["$event", "rep"] },
+                  ],
+                },
+                then: 1,
+                else: 0,
               },
-              then: 1,
-              else: 0,
             },
           },
-        },
-      },
-    };
-    basePipeline.push({
-      $project: {
-        _id: 0,
-        pupitre: "$_id.pupitre",
-        count: "$count",
-        presentRep: "$presentRep",
-        absentRep: "$absentRep",
-      },
-    });
-  } else if (req.query.genre === "chorist") {
-    basePipeline[1] = {
-      $group: {
-        _id: { user_sender: "$user_sender" },
-        presentRep: {
-          $sum: {
-            $cond: {
-              if: {
-                $and: [
-                  { $eq: ["$status", "present"] },
-                  { $eq: ["$event", "rep"] },
-                ],
+          absentRep: {
+            $sum: {
+              $cond: {
+                if: {
+                  $and: [
+                    { $eq: ["$status", "absent"] },
+                    { $eq: ["$event", "rep"] },
+                  ],
+                },
+                then: 1,
+                else: 0,
               },
-              then: 1,
-              else: 0,
             },
           },
+          count: { $sum: 1 },
         },
-        absentRep: {
-          $sum: {
-            $cond: {
-              if: {
-                $and: [
-                  { $eq: ["$status", "absent"] },
-                  { $eq: ["$event", "rep"] },
-                ],
-              },
-              then: 1,
-              else: 0,
-            },
-          },
+      };
+      basePipeline.push({
+        $lookup: {
+          from: "users",
+          localField: "_id.user_sender",
+          foreignField: "_id",
+          as: "userDetails",
         },
-        count: { $sum: 1 },
-      },
-    };
-    basePipeline.push({
-      $lookup: {
-        from: "users",
-        localField: "_id.user_sender",
-        foreignField: "_id",
-        as: "userDetails",
-      },
-    });
-    // Add $unwind stage to destructure the user details array
-    basePipeline.push({
-      $unwind: "$userDetails",
-    });
-    // Add $project stage to reshape the output
-    basePipeline.push({
-      $project: {
-        _id: 0,
-        chorist: "$userDetails.firstName", // Replace with the actual field you want
-        count: "$count",
-        presentRep: "$presentRep",
-        absentRep: "$absentRep",
-      },
-    });
+      });
+      // Add $unwind stage to destructure the user details array
+      basePipeline.push({
+        $unwind: "$userDetails",
+      });
+      // Add $project stage to reshape the output
+      basePipeline.push({
+        $project: {
+          _id: 0,
+          chorist: "$userDetails.firstName", // Replace with the actual field you want
+          count: "$count",
+          presentRep: "$presentRep",
+          absentRep: "$absentRep",
+        },
+      });
+    }
   }
 
-  // Modify match stage based on period
-  if (req.query.period === "day") {
-    basePipeline[0].$match.date = new Date(req.query.startday);
-  } else if (req.query.period === "since") {
-    basePipeline[0].$match.date = { $gte: new Date(req.query.date) };
-  } else if (req.query.period === "period") {
-    basePipeline[0].$match.date = {
-      $gte: new Date(req.query.startdate),
-      $lte: new Date(req.query.enddate),
-    };
+  // Handle period criteria
+  if (period) {
+    if (
+      period !== "day" &&
+      period !== "since" &&
+      period !== "period" &&
+      period !== "debseason"
+    ) {
+      return next(
+        new ApiError(
+          "Invalid period value. Accepted values are 'day', 'since', 'period', or 'debseason'",
+          400
+        )
+      );
+    }
+
+    if (period === "day") {
+      basePipeline[0].$match.date = new Date(startday);
+    } else if (period === "since") {
+      basePipeline[0].$match.date = { $gte: new Date(date) };
+    } else if (period === "period") {
+      basePipeline[0].$match.date = {
+        $gte: new Date(startdate),
+        $lte: new Date(enddate),
+      };
+    } else if (period === "debseason") {
+      const ActiveSeason = await Season.findOne({ state_season: "new" });
+      if (!ActiveSeason) {
+        return next(new ApiError("No active season found", 404));
+      }
+      basePipeline[0].$match.date = { $gte: ActiveSeason.startSeason };
+    }
   }
 
   const stats = await Historic.aggregate(basePipeline);
