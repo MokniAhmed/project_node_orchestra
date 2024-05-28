@@ -166,7 +166,7 @@ exports.getFinalList = asyncHandler(async (req, res, next) => {
     .populate({
       path: "list_final",
       match: filter,
-      select: "firstName lastName group_pupitre",
+      select: "firstName lastName email role group_pupitre",
     });
 
   if (!concert) {
