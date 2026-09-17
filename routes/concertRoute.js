@@ -299,7 +299,7 @@ router.get("/placement/:id", protect, getPlacement);
 /**
  * @swagger
  * /api/v1/concert/confirm-all/{id}:
- *   get:
+ *   post:
  *     summary: Confirm All for Concert
  *     description: Confirm all for a specific concert by its ID.
  *     tags:
@@ -319,5 +319,5 @@ router.get("/placement/:id", protect, getPlacement);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/confirm-all/:id", ...admin, confirmAllToConcert);
+router.post("/confirm-all/:id", ...admin, confirmAllToConcert);
 module.exports = router;

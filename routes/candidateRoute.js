@@ -185,10 +185,10 @@ router.put("/infos/:id", ...admin, updateInfosAuditionForCondidate);
 router.delete("/:id", ...admin, deleteCondidateValidator, deleteCondidateById);
 /**
  * @swagger
- * /api/v1/candidate:
- *   get:
- *     summary: Get Accepted Candidates' Emails
- *     description: Retrieve a list of emails for accepted candidates.
+ * /api/v1/candidate/acceptance-emails:
+ *   post:
+ *     summary: Send Acceptance Emails to Candidates
+ *     description: Generate acceptance tokens and send emails to accepted candidates.
  *     tags:
  *       - Candidate
  *     responses:
@@ -197,11 +197,11 @@ router.delete("/:id", ...admin, deleteCondidateValidator, deleteCondidateById);
  *         content:
  *           application/json:
  *             example:
- *               data: ["email1@example.com", "email2@example.com"]
+ *               newListAccepted: []
  *       400:
  *         $ref: '#/components/responses/BadRequestResponse'
  */
-router.get("/", ...admin, acceptetionCandidateEmails);
+router.post("/acceptance-emails", ...admin, acceptetionCandidateEmails);
 /**
  * @swagger
  * /api/v1/candidate/res/{token}:
