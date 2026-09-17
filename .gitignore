@@ -1,5 +1,7 @@
 node_modules/
-
-package-lock.json
-
-uploads/``
+config.env
+.env
+.env.*
+uploads/
+npm-debug.log*
+.DS_Store
