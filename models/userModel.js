@@ -24,11 +24,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "password required"],
       minlength: [4, "Too short password"],
+      select: false,
     },
     passwordChangedAt: Date,
-    passwordResetCode: String,
-    passwordResetExpires: Date,
-    passwordResetVerified: Boolean,
+    passwordResetCode: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
+    passwordResetVerified: { type: Boolean, select: false },
     role: {
       type: String,
       enum: [
@@ -61,6 +62,17 @@ const userSchema = new mongoose.Schema(
 
   { timestamps: true }
 );
+
+userSchema.set('toJSON', {
+  transform(doc, ret) {
+    delete ret.password;
+    delete ret.passwordChangedAt;
+    delete ret.passwordResetCode;
+    delete ret.passwordResetExpires;
+    delete ret.passwordResetVerified;
+    return ret;
+  },
+});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();

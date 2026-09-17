@@ -55,24 +55,19 @@ exports.getUser = factory.getOne(User);
 // @desc    Create user
 // @route   POST  /api/v1/users
 // @access  Private/Admin
-exports.createUser = factory.createOne(User);
+const userCreationFields = [
+  'firstName', 'lastName', 'birthday', 'height', 'gender', 'phone',
+  'nationality', 'cin', 'email', 'password', 'role', 'address',
+  'musical_kbowledge', 'tessiture_vocale', 'musical_instrument', 'group_pupitre',
+];
 
-exports.changeUserPassword = asyncHandler(async (req, res, next) => {
-  const document = await User.findByIdAndUpdate(
-    req.params.id,
-    {
-      password: await bcrypt.hash(req.body.password, 12),
-      passwordChangedAt: Date.now(),
-    },
-    {
-      new: true,
-    }
-  );
-
-  if (!document) {
-    return next(new ApiError(`No document for this id ${req.params.id}`, 404));
+exports.createUser = asyncHandler(async (req, res) => {
+  const details = {};
+  for (const field of userCreationFields) {
+    if (req.body[field] !== undefined) details[field] = req.body[field];
   }
-  res.status(200).json({ data: document });
+  const user = await User.create(details);
+  res.status(201).json({ data: user });
 });
 
 // @desc    Delete specific user
@@ -114,13 +109,14 @@ exports.updateLoggedUserPassword = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/users/updateMe
 // @access  Private/Protect
 exports.updateLoggedUserData = asyncHandler(async (req, res, next) => {
+  const fields = ['firstName', 'lastName', 'email', 'phone', 'address'];
+  const details = {};
+  for (const field of fields) {
+    if (req.body[field] !== undefined) details[field] = req.body[field];
+  }
   const updatedUser = await User.findByIdAndUpdate(
     req.user._id,
-    {
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone,
-    },
+    details,
     { new: true }
   );
 
@@ -140,8 +136,10 @@ exports.deleteLoggedUserData = asyncHandler(async (req, res, next) => {
 // @route   put /api/v1/users/status/
 // @access  Private/Protect
 exports.updateStatus = asyncHandler(async (req, res, next) => {
-  const role = req.body;
-  const user = await User.findByIdAndUpdate(req.params.id, role, {
+  if (!Array.isArray(req.body.status)) {
+    return next(new ApiError('status must be an array', 400));
+  }
+  const user = await User.findByIdAndUpdate(req.params.id, { status: req.body.status }, {
     new: true,
   });
   if (!user) {

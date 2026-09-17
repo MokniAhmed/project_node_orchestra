@@ -4,7 +4,6 @@ const {
   createUserValidator,
   updateUserValidator,
   deleteUserValidator,
-  changeUserPasswordValidator,
   updateLoggedUserValidator,
 } = require("../utils/validators/userValidator");
 
@@ -16,7 +15,6 @@ const {
   deleteUser,
   uploadUserImage,
   resizeImage,
-  changeUserPassword,
   getLoggedUserData,
   updateLoggedUserPassword,
   updateLoggedUserData,
@@ -49,14 +47,6 @@ router.put("/status/:id", ...admin, updateStatus);
 router.put("/elimination_status/:id", ...admin, eliminationStatus);
 router.put("/testiture/:id", ...admin, updateTestitureVocale);
 
-// Admin
-// router.use(authMiddleware.allowedTo("admin"));
-router.put(
-  "/changePassword/:id",
-  ...admin,
-  changeUserPasswordValidator,
-  changeUserPassword
-);
 router.route("/").get(...admin, getUsers);
 /**
  * @swagger

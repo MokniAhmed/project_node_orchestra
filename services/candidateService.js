@@ -1,5 +1,6 @@
 /* eslint-disable */
 const asyncHandler = require("express-async-handler");
+const crypto = require("crypto");
 
 const ApiError = require("../utils/apiError");
 const createToken = require("../utils/createToken");
@@ -326,25 +327,30 @@ exports.responseCondidateForAcceptation = asyncHandler(
         __v,
         ...userProprety
       } = condidate.toJSON();
-      const password = Math.random() // 7-  Generate random number, eg: 0.123456
-        .toString(36) // Convert  to base-36 : "0.4fzyo82mvyr"
-        .slice(-8); // Cut off last 8 characters : "yo82mvyr"
-      // 8- create new user
+      const placeholderPassword = crypto.randomBytes(32).toString("hex");
+      const setupToken = crypto.randomBytes(32).toString("hex");
       const newUser = await User.create({
         ...userProprety,
         role: "chorist",
         group_pupitre: "first",
-        password,
+        password: placeholderPassword,
         status: { statuts: "junior", date: Date.now() },
       });
+      newUser.passwordResetCode = crypto
+        .createHash("sha256")
+        .update(setupToken)
+        .digest("hex");
+      newUser.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+      newUser.passwordResetVerified = false;
+      await newUser.save();
 
-      // 9- send email with password
-      sendEmail({
+      const setupUrl = `http://localhost:5173/set-password?email=${encodeURIComponent(newUser.email)}&resetCode=${encodeURIComponent(setupToken)}`;
+      await sendEmail({
         email: condidate.email,
-        subject: "accepted email",
-        message: "ekjneknke",
+        subject: "Set up your orchestra account",
+        message: `Your application has been accepted. Set up your account within 10 minutes: ${setupUrl}`,
         html: ` <div style="width: 99%;border: 1px solid rgb(0, 229, 255); display: flex; justify-content: center; align-items: center; flex-direction: column;font-family: Arial, Helvetica, sans-serif;">
-                    <h1>your password:${newUser.password}</h1>
+                    <a href="${setupUrl}">Set up your account</a>
                 </div>`,
       });
     }
