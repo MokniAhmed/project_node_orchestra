@@ -19,6 +19,8 @@ const {
 const { getQrCode } = require("../services/repetitionService");
 
 const router = express.Router();
+const { protect, allowedTo } = require('../middlewares/authMiddleware');
+const admin = [protect, allowedTo('admin')];
 /**
  * @swagger
  * /api/v1/concert:
@@ -75,7 +77,7 @@ const router = express.Router();
  *       400:
  *         $ref: '#/components/responses/400'
  */
-router.post("/", createConcertValidator, createConcert);
+router.post("/", ...admin, createConcertValidator, createConcert);
 /**
  * @swagger
  * /api/v1/concert:
@@ -90,7 +92,7 @@ router.post("/", createConcertValidator, createConcert);
  *       400:
  *         $ref: '#/components/responses/400'
  */
-router.get("/", getAllConcerts);
+router.get("/", protect, getAllConcerts);
 /**
  * @swagger
  * /api/v1/concert/{id}:
@@ -125,9 +127,9 @@ router.get("/", getAllConcerts);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/:id", getConcertById);
+router.get("/:id", protect, getConcertById);
 
-router.get("/detailed/:id", getConcertByIdAll);
+router.get("/detailed/:id", protect, getConcertByIdAll);
 /**
  * @swagger
  * /api/v1/concert/{id}:
@@ -151,7 +153,7 @@ router.get("/detailed/:id", getConcertByIdAll);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.delete("/:id", deleteConcertById);
+router.delete("/:id", ...admin, deleteConcertById);
 /**
  * @swagger
  * /api/v1/concert/{id}:
@@ -197,7 +199,7 @@ router.delete("/:id", deleteConcertById);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.put("/:id", updateConcertById);
+router.put("/:id", ...admin, updateConcertById);
 /**
  * @swagger
  * /api/v1/concert/confirm/{id}:
@@ -221,7 +223,7 @@ router.put("/:id", updateConcertById);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.post("/confirm/:id", checkDisponiblilte);
+router.post("/confirm/:id", ...admin, checkDisponiblilte);
 /**
  * @swagger
  * /api/v1/concert/final-list/{id}:
@@ -245,7 +247,7 @@ router.post("/confirm/:id", checkDisponiblilte);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/final-list/:id", getFinalList);
+router.get("/final-list/:id", protect, getFinalList);
 /**
  * @swagger
  * /api/v1/concert/get-qrcode/{id}:
@@ -269,7 +271,7 @@ router.get("/final-list/:id", getFinalList);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/get-qrcode/:id", getQrCode);
+router.get("/get-qrcode/:id", ...admin, getQrCode);
 /**
  * @swagger
  * /api/v1/concert/placement/{id}:
@@ -293,7 +295,7 @@ router.get("/get-qrcode/:id", getQrCode);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/placement/:id", getPlacement);
+router.get("/placement/:id", protect, getPlacement);
 /**
  * @swagger
  * /api/v1/concert/confirm-all/{id}:
@@ -317,5 +319,5 @@ router.get("/placement/:id", getPlacement);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/confirm-all/:id", confirmAllToConcert);
+router.get("/confirm-all/:id", ...admin, confirmAllToConcert);
 module.exports = router;

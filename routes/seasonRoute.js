@@ -7,6 +7,8 @@ const {
 } = require("../utils/validators/seasonValidator");
 
 const router = express.Router();
+const { protect, allowedTo } = require('../middlewares/authMiddleware');
+const admin = [protect, allowedTo('admin')];
 /**
  * @swagger
  * /api/v1/season:
@@ -49,6 +51,6 @@ const router = express.Router();
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.post("/", createNewSeasonValidator, seasonService.CreateSeason);
+router.post("/", ...admin, createNewSeasonValidator, seasonService.CreateSeason);
 router.get("/getseason", seasonService.getseason);
 module.exports = router;

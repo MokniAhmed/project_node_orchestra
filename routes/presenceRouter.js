@@ -12,6 +12,7 @@ const { route } = require("./userRoute");
 const { getQrCode } = require("../services/repetitionService");
 
 const router = express.Router();
+const admin = [protect, allowedTo('admin')];
 /**
  * @swagger
  * /api/v1/presence:
@@ -52,8 +53,8 @@ const router = express.Router();
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.put("/qrcode", protect, markPrsence);
-router.get("/qrcode/:id", getQrCode);
+router.put("/qrcode", protect, allowedTo('chorist'), markPrsence);
+router.get("/qrcode/:id", ...admin, getQrCode);
 /**
  * @swagger
  * /api/v1/presence/add-manualy/{id}:
@@ -91,8 +92,7 @@ router.get("/qrcode/:id", getQrCode);
  */
 router.put(
   "/add-manualy/:id",
-  protect,
-  // allowedTo("manager_choeur"),
+  ...admin,
   addPrsenceManualy
 );
 /**
@@ -135,7 +135,7 @@ router.put(
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.post("/demandeAbsent", protect, demandeAbsent);
+router.post("/demandeAbsent", protect, allowedTo('chorist'), demandeAbsent);
 /**
  * @swagger
  * /api/v1/presence/nbr_presence_in_season_for_any_pupitre/{id}:
@@ -161,7 +161,7 @@ router.post("/demandeAbsent", protect, demandeAbsent);
  */
 router.get(
   "/nbr_presence_in_season_for_any_pupitre/:id",
-  getPorcentagePresenceInSeasonForAnyPupitre
+  ...admin, getPorcentagePresenceInSeasonForAnyPupitre
 );
 /**
  * @swagger
@@ -188,7 +188,7 @@ router.get(
  */
 router.get(
   "/nbr_presence_in_concert_for_any_pupitre/:id",
-  getPorcentagePresenceInConcertForAnyPupitre
+  ...admin, getPorcentagePresenceInConcertForAnyPupitre
 );
 /**
  * @swagger
@@ -222,6 +222,6 @@ router.get(
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/", getHistoric);
+router.get("/", ...admin, getHistoric);
 
 module.exports = router;

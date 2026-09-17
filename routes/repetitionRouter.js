@@ -10,6 +10,8 @@ const {
 } = require("../services/repetitionService");
 
 const router = express.Router();
+const { protect, allowedTo } = require('../middlewares/authMiddleware');
+const admin = [protect, allowedTo('admin')];
 
 router
   .route("/")
@@ -29,7 +31,7 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .get(getAllRepetition)
+  .get(protect, getAllRepetition)
   /**
    * @swagger
    * /api/v1/repetition:
@@ -94,7 +96,7 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .post(createRepetition);
+  .post(...admin, createRepetition);
 router
   .route("/:id")
   /**
@@ -120,10 +122,10 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .get(getRepeitionById);
+  .get(protect, getRepeitionById);
 router
   .route("/detailed/:id")
-  .get(getRepeitionDetailedById)
+  .get(protect, getRepeitionDetailedById)
   /**
    * @swagger
    * /api/v1/repetition/{id}:
@@ -159,7 +161,7 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .patch(updateRepetition)
+  .patch(...admin, updateRepetition)
   /**
    * @swagger
    * /api/v1/repetition/{id}:
@@ -183,6 +185,6 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .delete(deleteRepetition);
-router.get("/qrCode/:id", getQrCode);
+  .delete(...admin, deleteRepetition);
+router.get("/qrCode/:id", ...admin, getQrCode);
 module.exports = router;

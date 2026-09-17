@@ -10,6 +10,8 @@ const {
 } = require("../utils/validators/musicalValidator");
 
 const router = express.Router();
+const { protect, allowedTo } = require('../middlewares/authMiddleware');
+const admin = [protect, allowedTo('admin')];
 router
   .route("/")
   /**
@@ -66,7 +68,7 @@ router
    *       400:
    *         $ref: '#/components/responses/400'
    */
-  .post(createNewMusicalValidator, musicalService.createMusical)
+  .post(...admin, createNewMusicalValidator, musicalService.createMusical)
   /**
    * @swagger
    * /api/v1/musical:
@@ -81,7 +83,7 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .get(musicalService.getAllMusical);
+  .get(protect, musicalService.getAllMusical);
 
 router
   .route("/:id")
@@ -148,7 +150,7 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .put(updateMusicalValidator, musicalService.updateMusical)
+  .put(...admin, updateMusicalValidator, musicalService.updateMusical)
   /**
    * @swagger
    * /api/v1/musical/{id}:
@@ -172,7 +174,7 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .get(getMusicalByIdValidator, musicalService.getMusicalById)
+  .get(protect, getMusicalByIdValidator, musicalService.getMusicalById)
   /**
    * @swagger
    * /api/v1/musical/{id}:
@@ -196,6 +198,6 @@ router
    *       404:
    *         $ref: '#/components/responses/404'
    */
-  .delete(deleteMusicalValidator, musicalService.deleteMusicalById);
+  .delete(...admin, deleteMusicalValidator, musicalService.deleteMusicalById);
 
 module.exports = router;

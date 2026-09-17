@@ -7,6 +7,8 @@ const {
 } = require("../services/auditionService");
 
 const router = express.Router();
+const { protect, allowedTo } = require('../middlewares/authMiddleware');
+const admin = [protect, allowedTo('admin')];
 /**
  * @swagger
  * /api/v1/audition/{seasonId}:
@@ -55,7 +57,7 @@ const router = express.Router();
  *             ending_date: "2023-12-03"
  *             nb_candidate_day: 3
  */
-router.post("/:seasonId", createAudition);
+router.post("/:seasonId", ...admin, createAudition);
 /**
  * @swagger
  * /api/v1/audition:
@@ -100,7 +102,7 @@ router.get("/", AllAudition);
  *                     email: "tester@gmail.com"
  *                   _id: "656cc2911fcbeea90f47dca5"
  */
-router.get("/:id", getPlanningByAuditId);
-router.delete("/:id", deleteauditionId);
+router.get("/:id", ...admin, getPlanningByAuditId);
+router.delete("/:id", ...admin, deleteauditionId);
 
 module.exports = router;

@@ -34,28 +34,30 @@ const {
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
+const admin = [authMiddleware.protect, authMiddleware.allowedTo('admin')];
 
 // router.use(authMiddleware.protect);
 
-router.get("/getMe", getLoggedUserData, getUser);
-router.post("/", createUser);
-router.put("/changeMyPassword", updateLoggedUserPassword);
-router.put("/updateMe", updateLoggedUserData);
-router.delete("/deleteMe", deleteLoggedUserData);
+router.get("/getMe", authMiddleware.protect, getLoggedUserData, getUser);
+router.post("/", ...admin, createUser);
+router.put("/changeMyPassword", authMiddleware.protect, updateLoggedUserPassword);
+router.put("/updateMe", authMiddleware.protect, updateLoggedUserData);
+router.delete("/deleteMe", authMiddleware.protect, deleteLoggedUserData);
 
-router.put("/status/:id", updateStatus);
+router.put("/status/:id", ...admin, updateStatus);
 
-router.put("/elimination_status/:id", eliminationStatus);
-router.put("/testiture/:id", updateTestitureVocale);
+router.put("/elimination_status/:id", ...admin, eliminationStatus);
+router.put("/testiture/:id", ...admin, updateTestitureVocale);
 
 // Admin
 // router.use(authMiddleware.allowedTo("admin"));
 router.put(
   "/changePassword/:id",
+  ...admin,
   changeUserPasswordValidator,
   changeUserPassword
 );
-router.route("/").get(getUsers).post(createUser);
+router.route("/").get(...admin, getUsers);
 /**
  * @swagger
  * /confirm-concert/{id}:
@@ -83,8 +85,8 @@ router.route("/").get(getUsers).post(createUser);
  */
 router
   .route("/:id")
-  .get(getUserValidator, getUser)
-  .delete(deleteUserValidator, deleteUser);
+  .get(...admin, getUserValidator, getUser)
+  .delete(...admin, deleteUserValidator, deleteUser);
 router.post(
   "/confirm-concert/:id",
   authMiddleware.protect,
@@ -129,7 +131,7 @@ router.post(
  */
 router.post(
   "/notification/urgent",
-  authMiddleware.protect,
+  ...admin,
   sendNotificationUrgente
 );
 /**
@@ -178,5 +180,5 @@ router.post(
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.put("/notification/:id", authMiddleware.protect, createNotificationRep);
+router.put("/notification/:id", ...admin, createNotificationRep);
 module.exports = router;

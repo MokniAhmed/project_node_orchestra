@@ -6,6 +6,7 @@ const breakValidator = require("../utils/validators/breaksValidator");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
+const { breakOwnerOrAdmin, pendingBreak } = require('../middlewares/ownershipMiddleware');
 router
   .route("/")
   /**
@@ -21,8 +22,8 @@ router
    *         description: Successful response
    */
   .post(
-    breakValidator.createBreakValidator,
     authMiddleware.protect,
+    breakValidator.createBreakValidator,
     breakService.createBreak
   )
   /**
@@ -37,13 +38,13 @@ router
    *       200:
    *         description: Successful response
    */
-  .get(breakService.getBreaks);
+  .get(authMiddleware.protect, authMiddleware.allowedTo('admin'), breakService.getBreaks);
 
 router
   .route("/:id")
-  .put(breakValidator.updateBreakValidator, breakService.updateInfoBreakById)
-  .get(breakService.getBreakById)
-  .delete(breakValidator.deleteBreakValidator, breakService.deleteBreakById);
+  .put(authMiddleware.protect, breakOwnerOrAdmin, pendingBreak, breakValidator.updateBreakValidator, breakService.updateInfoBreakById)
+  .get(authMiddleware.protect, breakOwnerOrAdmin, breakService.getBreakById)
+  .delete(authMiddleware.protect, authMiddleware.allowedTo('admin'), breakValidator.deleteBreakValidator, breakService.deleteBreakById);
 /**
  * @swagger
  * /api/v1/break/status/{id}:
@@ -82,6 +83,7 @@ router
 router.put(
   "/status/:id",
   authMiddleware.protect,
+  authMiddleware.allowedTo('admin'),
   breakService.updateStatusBreakById
 );
 

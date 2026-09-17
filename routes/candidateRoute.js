@@ -19,6 +19,8 @@ const {
 } = require("../services/candidateService");
 
 const router = express.Router();
+const { protect, allowedTo } = require('../middlewares/authMiddleware');
+const admin = [protect, allowedTo('admin')];
 
 /**
  * @swagger
@@ -32,7 +34,7 @@ const router = express.Router();
  *       200:
  *         $ref: '#/components/responses/200'
  */
-router.get("/all", candidateService.getAllCandidates);
+router.get("/all", ...admin, candidateService.getAllCandidates);
 /**
  * @swagger
  * /api/v1/candidate:
@@ -107,8 +109,8 @@ router.get("/all", candidateService.getAllCandidates);
  */
 router.post("/", createCondidateValidator, CreateCondidateNotValide);
 //for test
-router.post("/new", createNewCandidate);
-router.get("/:id", getOneCandidate);
+router.post("/new", ...admin, createNewCandidate);
+router.get("/:id", ...admin, getOneCandidate);
 /**
  * @swagger
  * /api/v1/candidate/{token}:
@@ -156,7 +158,7 @@ router.put("/:token", ValidateCondidate);
  *       404:
  *         $ref: '#/components/responses/NotFoundResponse'
  */
-router.put("/infos/:id", updateInfosAuditionForCondidate);
+router.put("/infos/:id", ...admin, updateInfosAuditionForCondidate);
 /**
  * @swagger
  * /api/v1/candidate/{id}:
@@ -180,7 +182,7 @@ router.put("/infos/:id", updateInfosAuditionForCondidate);
  *       404:
  *         $ref: '#/components/responses/NotFoundResponse'
  */
-router.delete("/:id", deleteCondidateValidator, deleteCondidateById);
+router.delete("/:id", ...admin, deleteCondidateValidator, deleteCondidateById);
 /**
  * @swagger
  * /api/v1/candidate:
@@ -199,7 +201,7 @@ router.delete("/:id", deleteCondidateValidator, deleteCondidateById);
  *       400:
  *         $ref: '#/components/responses/BadRequestResponse'
  */
-router.get("/", acceptetionCandidateEmails);
+router.get("/", ...admin, acceptetionCandidateEmails);
 /**
  * @swagger
  * /api/v1/candidate/res/{token}:

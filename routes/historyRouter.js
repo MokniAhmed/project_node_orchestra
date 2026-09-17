@@ -11,6 +11,8 @@ const {
 const { protect, allowedTo } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
+const { historyOwnerOrAdmin } = require('../middlewares/ownershipMiddleware');
+const admin = [protect, allowedTo('admin')];
 
 /**
  * @swagger
@@ -42,7 +44,7 @@ const router = express.Router();
 router.get(
   "/my-histroy/:id",
   protect,
-  allowedTo("chorist", "admin"),
+  historyOwnerOrAdmin,
   getHistoryByUser
 );
 /**
@@ -65,9 +67,9 @@ router.get(
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/state-history", getStatistique);
+router.get("/state-history", ...admin, getStatistique);
 
-router.post("/add-present-auto", addPrsenceAutomatiqly);
+router.post("/add-present-auto", ...admin, addPrsenceAutomatiqly);
 
 /**
  * @swagger
@@ -89,9 +91,9 @@ router.post("/add-present-auto", addPrsenceAutomatiqly);
  *       404:
  *         $ref: '#/components/responses/404'
  */
-router.get("/stats-etat-rep", etatAbsentStat);
-router.get("/listabs", getAbsList);
-router.post("/nomination/:id", nominatedorabsentchoriste);
-router.post("/profil/:id", profilDetail);
+router.get("/stats-etat-rep", ...admin, etatAbsentStat);
+router.get("/listabs", ...admin, getAbsList);
+router.post("/nomination/:id", ...admin, nominatedorabsentchoriste);
+router.post("/profil/:id", ...admin, profilDetail);
 
 module.exports = router;
