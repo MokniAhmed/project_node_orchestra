@@ -6,7 +6,7 @@ class ApiFeatures {
 
   filter() {
     const queryStringObj = { ...this.queryString };
-    const excludesFields = ['page', 'sort', 'limit', 'fields'];
+    const excludesFields = ['page', 'sort', 'limit', 'fields', 'keyword'];
     excludesFields.forEach((field) => delete queryStringObj[field]);
     // Apply filtration using [gte, gt, lte, lt]
     let queryStr = JSON.stringify(queryStringObj);
@@ -22,7 +22,7 @@ class ApiFeatures {
       const sortBy = this.queryString.sort.split(',').join(' ');
       this.mongooseQuery = this.mongooseQuery.sort(sortBy);
     } else {
-      this.mongooseQuery = this.mongooseQuery.sort('-createAt');
+      this.mongooseQuery = this.mongooseQuery.sort('-createdAt');
     }
     return this;
   }
@@ -55,8 +55,12 @@ class ApiFeatures {
   }
 
   paginate(countDocuments) {
-    const page = this.queryString.page * 1 || 1;
-    const limit = this.queryString.limit * 1 || 13;
+    const validInteger = (value) => {
+      const number = Number(value);
+      return Number.isSafeInteger(number) && number >= 1 ? number : null;
+    };
+    const page = validInteger(this.queryString.page) || 1;
+    const limit = Math.min(validInteger(this.queryString.limit) || 13, 100);
     const skip = (page - 1) * limit;
     const endIndex = page * limit;
 

@@ -61,11 +61,12 @@ exports.getAll = (Model, modelName = "") =>
       filter = req.filterObj;
     }
     // Build query
-    const documentsCounts = await Model.countDocuments();
     const apiFeatures = new ApiFeatures(Model.find(filter), req.query)
-      .paginate(documentsCounts)
       .filter()
-      .search(modelName)
+      .search(modelName);
+    const documentsCounts = await Model.countDocuments(apiFeatures.mongooseQuery.getFilter());
+    apiFeatures
+      .paginate(documentsCounts)
       .limitFields()
       .sort();
 
