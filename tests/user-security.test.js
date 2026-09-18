@@ -178,7 +178,9 @@ describe('user credential and assignment security', () => {
 
   it('changeMyPassword updates only the logged-in user and returns no credentials', async () => {
     const result = await request('PUT', '/users/changeMyPassword', chorist, {
+      currentPassword: 'initialPass123',
       password: 'newSelfPassword',
+      passwordConfirm: 'newSelfPassword',
     });
     assert.equal(result.status, 200);
     assert.ok(result.data.token);

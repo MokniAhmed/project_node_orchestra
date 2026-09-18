@@ -84,22 +84,21 @@ exports.getLoggedUserData = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Update logged user password
-// @route   PUT /api/v1/users/updateMyPassword
+// @route   PUT /api/v1/users/changeMyPassword
 // @access  Private/Protect
 exports.updateLoggedUserPassword = asyncHandler(async (req, res, next) => {
-  // 1) Update user password based user payload (req.user._id)
-  const user = await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      password: await bcrypt.hash(req.body.password, 12),
-      passwordChangedAt: Date.now(),
-    },
-    {
-      new: true,
-    }
-  );
+  const user = await User.findById(req.user._id).select('+password');
+  if (!user || !(await bcrypt.compare(req.body.currentPassword, user.password))) {
+    return next(new ApiError('Current password is incorrect', 400));
+  }
 
-  // 2) Generate token
+  user.password = req.body.password;
+  user.passwordChangedAt = Date.now();
+  user.passwordResetCode = undefined;
+  user.passwordResetExpires = undefined;
+  user.passwordResetVerified = undefined;
+  await user.save();
+
   const token = createToken(user._id);
 
   res.status(200).json({ data: user, token });

@@ -5,6 +5,7 @@ const {
   updateUserValidator,
   deleteUserValidator,
   updateLoggedUserValidator,
+  changeMyPasswordValidator,
 } = require("../utils/validators/userValidator");
 
 const {
@@ -38,7 +39,7 @@ const admin = [authMiddleware.protect, authMiddleware.allowedTo('admin')];
 
 router.get("/getMe", authMiddleware.protect, getLoggedUserData, getUser);
 router.post("/", ...admin, createUser);
-router.put("/changeMyPassword", authMiddleware.protect, updateLoggedUserPassword);
+router.put("/changeMyPassword", authMiddleware.protect, changeMyPasswordValidator, updateLoggedUserPassword);
 router.put("/updateMe", authMiddleware.protect, updateLoggedUserData);
 router.delete("/deleteMe", authMiddleware.protect, deleteLoggedUserData);
 
