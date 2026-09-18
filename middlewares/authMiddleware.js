@@ -73,11 +73,24 @@ exports.protectSocket = asyncHandler(async (socket, next) => {
 
     // 3. Check user existence
     const currentUser = await User.findById(decoded.userId).select(
-      "role group_pupitre list_muted email"
+      "role group_pupitre list_muted email passwordChangedAt"
     );
 
     if (!currentUser) {
       throw new ApiError("Invalid user for token", 401);
+    }
+
+    if (currentUser.passwordChangedAt) {
+      const passChangedTimestamp = parseInt(
+        currentUser.passwordChangedAt.getTime() / 1000,
+        10
+      );
+      if (passChangedTimestamp > decoded.iat) {
+        throw new ApiError(
+          "User recently changed his password. please login again..",
+          401
+        );
+      }
     }
 
     // 4. Attach user to socket

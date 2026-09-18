@@ -75,4 +75,45 @@ describe('protectSocket', () => {
     assert.equal(socket.user.list_muted.length, 1);
     assert.equal(socket.user.email, 'socket-user@example.test');
   });
+
+  it('rejects a socket JWT issued before passwordChangedAt', async () => {
+    const changedAtSeconds = Math.floor(Date.now() / 1000);
+    const passwordChangedUser = await User.create({
+      firstName: 'Changed', lastName: 'Password', birthday: '1990-01-01', height: 1.7,
+      gender: 'female', nationality: 'Tunisian', address: 'Tunis',
+      email: 'socket-old-token@example.test', password: 'initialPass123', role: 'chorist',
+    });
+    await User.findByIdAndUpdate(passwordChangedUser.id, {
+      passwordChangedAt: new Date(changedAtSeconds * 1000),
+    });
+    const token = jwt.sign(
+      { userId: passwordChangedUser.id, iat: changedAtSeconds - 60 },
+      process.env.JWT_SECRET_KEY
+    );
+    const { socket, calls } = await authenticate(`Bearer ${token}`);
+    assert.equal(calls.length, 1);
+    assert.ok(calls[0] instanceof Error);
+    assert.equal(calls[0].statusCode, 401);
+    assert.equal(socket.user, undefined);
+  });
+
+  it('accepts a socket JWT issued after passwordChangedAt', async () => {
+    const issuedAtSeconds = Math.floor(Date.now() / 1000);
+    const passwordChangedUser = await User.create({
+      firstName: 'Fresh', lastName: 'Token', birthday: '1990-01-01', height: 1.7,
+      gender: 'female', nationality: 'Tunisian', address: 'Tunis',
+      email: 'socket-fresh-token@example.test', password: 'initialPass123', role: 'chorist',
+    });
+    await User.findByIdAndUpdate(passwordChangedUser.id, {
+      passwordChangedAt: new Date((issuedAtSeconds - 60) * 1000),
+    });
+    const token = jwt.sign(
+      { userId: passwordChangedUser.id, iat: issuedAtSeconds },
+      process.env.JWT_SECRET_KEY
+    );
+    const { socket, calls } = await authenticate(`Bearer ${token}`);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0], undefined);
+    assert.equal(socket.user.id, passwordChangedUser.id);
+  });
 });
