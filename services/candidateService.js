@@ -9,6 +9,7 @@ const User = require("../models/userModel");
 const Audition = require("../models/auditionModel");
 const sendEmail = require("../utils/sendEmail");
 const factory = require("./handlersFactory");
+const getNextAuditionSlot = require("../utils/auditionScheduling");
 
 // @desc    Create Condidate Not Valide
 // @route   POST /api/v1/condidate/
@@ -75,27 +76,9 @@ exports.ValidateCondidate = asyncHandler(async (req, res, next) => {
 
     const { nb_candidate_day, planning, audition_starting_date } = audition;
 
-    let currentDate, order;
-
-    if (planning.length === 0) {
-      currentDate = new Date(audition_starting_date);
-      currentDate.setHours(9, 0, 0);
-      order = 1;
-    } else {
-      const lastCandidate = planning[planning.length - 1];
-      if (lastCandidate.order < nb_candidate_day) {
-        currentDate = new Date(
-          lastCandidate.starting_date.getTime() +
-            lastCandidate.duration * 60 * 1000
-        );
-        order = lastCandidate.order + 1;
-      } else {
-        currentDate = new Date(lastCandidate.starting_date);
-        currentDate.setDate(currentDate.getDate() + 1);
-        currentDate.setHours(9, 0, 0);
-        order = 1;
-      }
-    }
+    const { starting_date: currentDate, order } = getNextAuditionSlot({
+      planning, audition_starting_date, nb_candidate_day,
+    });
 
     const candidatePlan = {
       starting_date: currentDate,
@@ -155,34 +138,9 @@ exports.createNewCandidate = asyncHandler(async (req, res, next) => {
   // destrcution
   const { nb_candidate_day, planning, audition_starting_date } = audit;
 
-  // Calculate the starting date for the new candidate
-
-  let currentDate;
-  let order;
-  // first candidate  get the order 1 and the date is the starting date at 9am
-  if (planning.length === 0) {
-    currentDate = new Date(audition_starting_date);
-    //ybda 9 Am
-    currentDate.setHours(9, 0, 0);
-    order = 1;
-  } else {
-    // if no the first candidate he take the last one and we calculate the date depende on the last one
-    const lastCandidate = planning[planning.length - 1];
-    // we still can accpet candidate in that day
-    if (lastCandidate.order <= nb_candidate_day) {
-      currentDate = new Date(
-        lastCandidate.starting_date.getTime() +
-          lastCandidate.duration * 60 * 1000
-      );
-      order = lastCandidate.order + 1;
-    } else {
-      //we get the limit of the day and we gonna start from the next day we reset the order and we increment the day +1
-      currentDate = new Date(lastCandidate.starting_date);
-      currentDate.setDate(currentDate.getDate() + 1);
-      currentDate.setHours(9, 0, 0);
-      order = 1;
-    }
-  }
+  const { starting_date: currentDate, order } = getNextAuditionSlot({
+    planning, audition_starting_date, nb_candidate_day,
+  });
 
   const candidatePlan = {
     starting_date: currentDate,
