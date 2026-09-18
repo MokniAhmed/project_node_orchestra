@@ -10,6 +10,7 @@ const Audition = require("../models/auditionModel");
 const sendEmail = require("../utils/sendEmail");
 const factory = require("./handlersFactory");
 const getNextAuditionSlot = require("../utils/auditionScheduling");
+const buildAuditionConfirmationEmail = require("../utils/auditionEmail");
 
 // @desc    Create Condidate Not Valide
 // @route   POST /api/v1/condidate/
@@ -49,17 +50,14 @@ exports.CreateCondidateNotValide = asyncHandler(async (req, res, next) => {
 // @access  public/user
 exports.ValidateCondidate = asyncHandler(async (req, res, next) => {
   const { token } = req.params;
-  console.log(req.params, token);
   // 1- find condidate by token_validate
   const condidate = await Condidate.findOne({
     token_validate: token,
   });
-  console.log(condidate);
   if (!condidate) {
     return next(new ApiError("token email invalid", 401));
   }
   if (!condidate.validate_mail) {
-    console.log("here validate");
     // 2- Validate candidate email
     condidate.token_validate = null;
     condidate.validate_mail = true;
@@ -88,41 +86,17 @@ exports.ValidateCondidate = asyncHandler(async (req, res, next) => {
     planning.push(candidatePlan);
     audition.planning = planning;
     await audition.save();
-    await sendEmail({
+    await sendEmail(buildAuditionConfirmationEmail({
       email: condidate.email,
-      subject: "Audition Schedule Confirmation",
-      message: "Your audition is confirmed. Please see the details below.",
-      html: `
-        <html>
-          <head>
-            <style>
-              .email-container { font-family: Arial, Helvetica, sans-serif; color: #4B5563; background-color: #F9FAFB; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-              .header { color: #1F2937; font-size: 24px; font-weight: 800; }
-              .body-text { margin-bottom: 16px; }
-              .strong { font-weight: bold; }
-              .footer { margin-top: 20px; }
-            </style>
-          </head>
-          <body>
-            <div class="email-container">
-              <h1 class="header">Audition Confirmation</h1>
-              <p class="body-text">Hello ${condidate.firstName},</p>
-              <p class="body-text">Thank you for applying for the audition. We are pleased to inform you that your application has been received and scheduled.</p>
-              <p class="body-text"><span class="strong">Audition Date and Time:</span> ${currentDate.toLocaleString()}</p>
-              <p class="body-text">Please make sure to arrive on time and prepare any necessary materials for your audition.</p>
-              <p class="footer">Best regards,<br>Your Audition Team</p>
-            </div>
-          </body>
-        </html>
-      `,
-    });
+      firstName: condidate.firstName,
+      auditionDate: currentDate,
+    }));
     // 5- Save candidate changes
     await condidate.save();
   }
   res.status(200).json({ message: "Candidate processed.", condidate });
 });
 
-//for test
 // @desc    create new candidate
 // @route   POST /api/v1/condidate/new
 // @access  public/user
@@ -151,34 +125,11 @@ exports.createNewCandidate = asyncHandler(async (req, res, next) => {
   //send mail
   audit.planning = planning;
   await audit.save();
-  await sendEmail({
-    email: newCondidate.email, // Ensure you replace this with the correct variable for the candidate's email
-    subject: "Audition Schedule Confirmation",
-    message: "Your audition is confirmed. Please see the details below.", // Fallback plain text content
-    html: `
-      <html>
-        <head>
-          <style>
-            .email-container { font-family: Arial, Helvetica, sans-serif; color: #4B5563; background-color: #F9FAFB; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-            .header { color: #1F2937; font-size: 24px; font-weight: 800; }
-            .body-text { margin-bottom: 16px; }
-            .strong { font-weight: bold; }
-            .footer { margin-top: 20px; }
-          </style>
-        </head>
-        <body>
-          <div class="email-container">
-            <h1 class="header">Audition Confirmation</h1>
-            <p class="body-text">Hello ${newCondidate.firstName},</p>
-            <p class="body-text">Thank you for applying for the audition. We are pleased to inform you that your application has been received and scheduled.</p>
-            <p class="body-text"><span class="strong">Audition Date and Time:</span> ${currentDate.toLocaleString()}</p>
-            <p class="body-text">Please make sure to arrive on time and prepare any necessary materials for your audition.</p>
-            <p class="footer">Best regards,<br>Your Audition Team</p>
-          </div>
-        </body>
-      </html>
-    `,
-  });
+  await sendEmail(buildAuditionConfirmationEmail({
+    email: newCondidate.email,
+    firstName: newCondidate.firstName,
+    auditionDate: currentDate,
+  }));
   res.status(201).json({ data: newCondidate });
 });
 
