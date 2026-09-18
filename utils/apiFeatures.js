@@ -23,11 +23,14 @@ class ApiFeatures {
         }
       }
     }
-    // Apply filtration using [gte, gt, lte, lt]
-    let queryStr = JSON.stringify(queryStringObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    const filter = Object.fromEntries(Object.entries(queryStringObj).map(([field, value]) => [
+      field,
+      value !== null && typeof value === 'object'
+        ? Object.fromEntries(Object.entries(value).map(([operator, operand]) => [`$${operator}`, operand]))
+        : value,
+    ]));
 
-    this.mongooseQuery = this.mongooseQuery.find(JSON.parse(queryStr));
+    this.mongooseQuery = this.mongooseQuery.find(filter);
 
     return this;
   }

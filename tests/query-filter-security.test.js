@@ -9,6 +9,7 @@ const Item = mongoose.model('QueryFilterSecurityItem', new mongoose.Schema({
   name: String,
   category: String,
   role: String,
+  remark: String,
   price: Number,
   profile: { role: String },
   createdAt: Date,
@@ -34,7 +35,7 @@ describe('generic query filter security', () => {
     const mongoBase = process.env.SECURITY_TEST_MONGO_URI || 'mongodb://127.0.0.1:27017';
     await mongoose.connect(`${mongoBase}/orchestra_query_filter_${process.pid}_${Date.now()}`);
     await Item.create([
-      { name: 'alpha', category: 'active', role: 'chorist', price: 10, profile: { role: 'user' }, createdAt: '2024-01-01' },
+      { name: 'alpha', category: 'active', role: 'chorist', remark: 'gt', price: 10, profile: { role: 'user' }, createdAt: '2024-01-01' },
       { name: 'beta', category: 'active', role: 'admin', price: 20, profile: { role: 'admin' }, createdAt: '2024-02-01' },
       { name: 'gamma', category: 'inactive', role: 'chorist', price: 30, profile: { role: 'user' }, createdAt: '2024-03-01' },
     ]);
@@ -72,6 +73,13 @@ describe('generic query filter security', () => {
     assert.deepEqual((await list('?category=active')).body.data.map((item) => item.name), ['beta', 'alpha']);
     assert.deepEqual((await list('?price[gte]=20')).body.data.map((item) => item.name), ['gamma', 'beta']);
     assert.deepEqual((await list('?price[gt]=10&price[lte]=30')).body.data.map((item) => item.name), ['gamma', 'beta']);
+  });
+
+  it('preserves a literal comparison word in an equality value', async () => {
+    const result = await list('?remark=gt');
+    assert.equal(result.status, 200);
+    assert.deepEqual(result.body.data.map((item) => item.name), ['alpha']);
+    assert.equal(result.body.data[0].remark, 'gt');
   });
 
   it('excludes pagination parameters from filtering', async () => {
