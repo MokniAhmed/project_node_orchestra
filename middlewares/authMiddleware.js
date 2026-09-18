@@ -65,7 +65,7 @@ exports.protectSocket = asyncHandler(async (socket, next) => {
       authHeader && authHeader.startsWith("Bearer") && authHeader.split(" ")[1];
 
     if (!token) {
-      next(new ApiError("Unauthorized", 401)); // Handle missing token
+      return next(new ApiError("Unauthorized", 401)); // Handle missing token
     }
 
     // 2. Verify token
