@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
+const mongoose = require("mongoose");
 
 dotenv.config({ path: "config.env" });
 const ApiError = require("./utils/apiError");
@@ -16,9 +17,6 @@ const mountRoutes = require("./routes");
 
 const { initSwagger } = require("./swagger");
 const { io } = require("./socket");
-
-// Connect with db
-dbConnection();
 
 // express app
 const app = express();
@@ -51,6 +49,11 @@ if (process.env.NODE_ENV === "development") {
  
 //app.use("/api", limiter);
 
+app.get("/health/live", (req, res) => res.status(200).json({ status: "ok" }));
+app.get("/health/ready", (req, res) => {
+  const ready = mongoose.connection.readyState === 1;
+  res.status(ready ? 200 : 503).json({ status: ready ? "ok" : "unavailable" });
+});
 
 // Mount Routes
 mountRoutes(app);
@@ -63,18 +66,51 @@ app.all("*", (req, res, next) => {
 app.use(globalError);
 const server = http.createServer(app);
 const PORT = process.env.PORT || 8000;
+let socketStarted = false;
+let shuttingDown = false;
 
-io.listen(5000);
-
-server.listen(PORT, () => {
-  console.log(`App running running on port ${PORT}`);
-});
-
-// Handle rejection outside express
-process.on("unhandledRejection", (err) => {
-  console.error(`UnhandledRejection Errors: ${err.name} | ${err.message}`);
-  server.close(() => {
-    console.error(`Shutting down....`);
-    process.exit(1);
+async function start() {
+  await dbConnection();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(PORT, () => {
+      server.off("error", reject);
+      resolve();
+    });
   });
-});
+  io.listen(5000);
+  socketStarted = true;
+  console.log(`App running running on port ${PORT}`);
+}
+
+async function shutdown(exitCode) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  try {
+    if (server.listening) {
+      await new Promise((resolve, reject) => server.close((err) => err ? reject(err) : resolve()));
+    }
+    if (socketStarted) await new Promise((resolve) => io.close(resolve));
+    await mongoose.disconnect();
+    console.log("Shutdown complete");
+    process.exit(exitCode);
+  } catch (err) {
+    console.error("Shutdown error:", err);
+    process.exit(1);
+  }
+}
+
+if (require.main === module) {
+  process.on("SIGTERM", () => shutdown(0));
+  process.on("SIGINT", () => shutdown(0));
+  process.on("unhandledRejection", (err) => {
+    console.error(`UnhandledRejection Errors: ${err.name} | ${err.message}`);
+    shutdown(1);
+  });
+  start().catch((err) => {
+    console.error("Startup error:", err);
+    shutdown(1);
+  });
+}
+
+module.exports = { app, start };
