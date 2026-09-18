@@ -4,6 +4,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const cors = require("cors");
+const helmet = require("helmet");
 const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
@@ -21,9 +22,17 @@ const { io } = require("./socket");
 // express app
 const app = express();
 
-// Enable other domains to access your application
-app.use(cors());
-app.options("*", cors());
+app.use(helmet());
+const allowedOrigins = (process.env.CORS_ORIGINS === undefined
+  ? "http://localhost:3000,http://localhost:5173"
+  : process.env.CORS_ORIGINS).split(",").map((origin) => origin.trim()).filter(Boolean);
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin) return callback(null, false);
+    if (allowedOrigins.includes(origin)) return callback(null, origin);
+    return callback(new ApiError("CORS origin not allowed", 403));
+  },
+}));
 
 // compress all responses
 app.use(compression());
@@ -37,17 +46,12 @@ if (process.env.NODE_ENV === "development") {
   console.log(`mode: ${process.env.NODE_ENV}`);
 }
 
-// Limit each IP to 100 requests per `window` (here, per 15 minutes)
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 100,
-//   message:
-//     "Too many accounts created from this IP, please try again after an hour",
-// });
-
-// Apply the rate limiting middleware to all requests
- 
-//app.use("/api", limiter);
+app.use("/api", rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
 
 app.get("/health/live", (req, res) => res.status(200).json({ status: "ok" }));
 app.get("/health/ready", (req, res) => {
@@ -59,7 +63,7 @@ app.get("/health/ready", (req, res) => {
 mountRoutes(app);
 initSwagger(app);
 app.all("*", (req, res, next) => {
-  next(new ApiError(`Can't find this route: ${req.originalUrl}`, 400));
+  next(new ApiError(`Can't find this route: ${req.originalUrl}`, 404));
 });
 
 // Global error handling middleware for express
