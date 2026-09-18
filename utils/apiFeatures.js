@@ -1,3 +1,5 @@
+const ApiError = require('./apiError');
+
 class ApiFeatures {
   constructor(mongooseQuery, queryString) {
     this.mongooseQuery = mongooseQuery;
@@ -8,6 +10,19 @@ class ApiFeatures {
     const queryStringObj = { ...this.queryString };
     const excludesFields = ['page', 'sort', 'limit', 'fields', 'keyword'];
     excludesFields.forEach((field) => delete queryStringObj[field]);
+    for (const [field, value] of Object.entries(queryStringObj)) {
+      if (field.startsWith('$') || field.includes('.')) {
+        throw new ApiError('Invalid filter', 400);
+      }
+      if (value !== null && typeof value === 'object') {
+        if (Array.isArray(value) || !Object.entries(value).length ||
+          Object.entries(value).some(([operator, operand]) =>
+            !['gte', 'gt', 'lte', 'lt'].includes(operator) ||
+            (operand !== null && typeof operand === 'object'))) {
+          throw new ApiError('Invalid filter', 400);
+        }
+      }
+    }
     // Apply filtration using [gte, gt, lte, lt]
     let queryStr = JSON.stringify(queryStringObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
